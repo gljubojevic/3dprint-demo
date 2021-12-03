@@ -2,6 +2,7 @@
   "name": "3dprint-demo",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://gljubojevic.github.io/3dprint-demo",
   "dependencies": {
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
@@ -18,7 +19,9 @@
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+	"predeploy": "npm run build",
+	"deploy": "gh-pages -d build",
+	"start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -40,5 +43,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "gh-pages": "^3.2.3"
   }
 }
