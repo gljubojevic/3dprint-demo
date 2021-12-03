@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from "three";
+import Box from '@mui/material/Box';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
@@ -9,6 +10,7 @@ import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
 class View3D extends Component {
 	constructor(props) {
 		super(props);
+
 		this.refRenderer = React.createRef();
 		// methods
 		this.save = this.save.bind(this);
@@ -17,6 +19,7 @@ class View3D extends Component {
 		this.loaderError = this.loaderError.bind(this);
 		this.loaderProgress = this.loaderProgress.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
+		this.onWindowResize = this.onWindowResize.bind(this);
 
 		// Init exporters
 		this.exporterSTL = new STLExporter();
@@ -43,7 +46,16 @@ class View3D extends Component {
 
 	// just empty div to add renderer
 	render() {
-		return (<div ref={this.refRenderer} />);
+		// this is to make container below toolbar
+		// theme access is possible through function generating sx
+		return (
+			<Box
+				ref={this.refRenderer} 
+				sx={{
+					paddingTop: (theme) => theme.mixins.toolbar.minHeight + 'px'
+				}} 
+			/>
+		);
 	}
 
 	// extract scene and save object
@@ -78,14 +90,21 @@ class View3D extends Component {
 
 	// init three.js renderer
 	componentDidMount() {
-		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 100 );
+		// renderer element
+		const rsize = this.rendererDimensions();
+
+		// setup camera
+		this.camera = new THREE.PerspectiveCamera( 75, rsize.width / rsize.height, 0.1, 100 );
 		this.camera.position.y = 0.20;
 		this.camera.position.z = 0.10;
 
 		this.renderer = new THREE.WebGLRenderer();
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		//this.renderer.setPixelRatio( window.devicePixelRatio );	// doubles pixels?!?
+		this.renderer.setSize(rsize.width, rsize.height);
 		// use ref as a mount point of the Three.js scene instead of the document.body
 		this.refRenderer.current.appendChild( this.renderer.domElement );
+		// Add handler for resizing
+		window.addEventListener( 'resize', this.onWindowResize );
 
 		// controls
 		this.controls = new OrbitControls( this.camera, this.renderer.domElement );
@@ -110,6 +129,34 @@ class View3D extends Component {
 		this.loadObject(this.props.object3D);
 		this.loadBackgroundCube(this.props.backgroundCube);
 	}
+
+	componentWillUnmount() {
+		// remove handler for resizing
+		window.removeEventListener( 'resize', this.onWindowResize );
+	}
+
+	rendererDimensions(){
+		let d = {
+			//width: this.refRenderer.current.clientWidth,
+			width: window.innerWidth,
+			//height: this.refRenderer.current.clientHeight
+			height: window.innerHeight
+		}
+		let rst = getComputedStyle(this.refRenderer.current);
+		d.width -= parseFloat(rst.paddingLeft) + parseFloat(rst.paddingRight);
+		d.height -= parseFloat(rst.paddingTop) + parseFloat(rst.paddingBottom);
+		//console.log(d);
+		return d;
+	}
+
+	// TODO: fix resizing 
+	onWindowResize() {
+		const rsize = this.rendererDimensions();
+		this.camera.aspect = rsize.width / rsize.height;
+		this.camera.updateProjectionMatrix();
+		this.renderer.setSize( rsize.width, rsize.height );
+	}
+
 
 	loadObject(filePath){
 		if (null === filePath) {
@@ -137,17 +184,10 @@ class View3D extends Component {
 		this.renderer.render( this.scene, this.camera );
 	};
 
-	// TODO: fix resizing 
-	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
-		this.camera.updateProjectionMatrix();
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
-	}
-
 	// called when object is loaded
 	loaderOk(gltf) {
 		console.log("Object loaded");
-		//this.scene.add( gltf.scene );
+		// find optional elemnets
 		let el = [];
 		for (let i = 0; i < gltf.scene.children.length; i++) {
 			let obj = gltf.scene.children[i];
@@ -166,7 +206,6 @@ class View3D extends Component {
 				visible: false
 			});
 		}
-		//this.scene.add(gltf.scene);
 		this.loadedObject = gltf.scene;
 		this.scene.add(this.loadedObject);
 
