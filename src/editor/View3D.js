@@ -126,8 +126,15 @@ class View3D extends Component {
 			return;
 		}
 		// kickstart loading
+		this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
+		const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
+		//const refractionCube = this.loadBackgroundCube(this.props.backgroundCube);
+		//refractionCube.mapping = THREE.CubeRefractionMapping;
+
+		//this.cubeMaterial3 = new THREE.MeshLambertMaterial( { color: 0xff6600, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3 } );
+		//this.cubeMaterial2 = new THREE.MeshLambertMaterial( { color: 0xffee00, envMap: refractionCube, refractionRatio: 0.95 } );
+		this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
 		this.loadObject(this.props.object3D);
-		this.loadBackgroundCube(this.props.backgroundCube);
 	}
 
 	componentWillUnmount() {
@@ -174,7 +181,7 @@ class View3D extends Component {
 		if (null === filesCube) {
 			return;
 		}
-		this.scene.background = new THREE.CubeTextureLoader()
+		return new THREE.CubeTextureLoader()
 			.setPath(this.props.loadPath)
 			.load(filesCube);
 	}
@@ -196,6 +203,10 @@ class View3D extends Component {
 
 			// skip main model marked with "-main" in name
 			if (obj.name.includes("-main")) {
+				// setup reflection material
+				//obj.material = this.cubeMaterial3;
+				//obj.material = this.cubeMaterial2;
+				obj.material = this.cubeMaterial1;
 				continue;
 			}
 			// make non make element invisible
