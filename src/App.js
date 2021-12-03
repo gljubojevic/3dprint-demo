@@ -22,12 +22,23 @@ class App extends Component {
 		this.refDrawerMenu.current.toggleDrawer(e);
 	}
 
-	save() {
+	save(fileFormat) {
 		// get data from scene
-		let data = this.refView3D.current.save();
+		let data = this.refView3D.current.save(fileFormat);
 		//console.log("Data for save ->", data);
-		let blob = new Blob( [data], { type : 'application/octet-stream' } ); 
-		saveAs(blob, "for-print.stl");
+		switch (fileFormat) {
+			case "STL":
+				let blobSTL = new Blob( [data], { type : 'application/octet-stream' } ); 
+				saveAs(blobSTL, "for-print.stl");
+				break;
+			case "OBJ":
+				let blobOBJ = new Blob( [ data ], { type: 'text/plain' } );
+				saveAs(blobOBJ, "for-print.obj");
+				break;
+			default:
+				console.log("Unsupported file format ->",fileFormat);
+				break;
+		}
 	}
 
 	// Get list of elements to hide and show

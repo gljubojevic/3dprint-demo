@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
 
 class View3D extends Component {
 	constructor(props) {
@@ -17,8 +18,9 @@ class View3D extends Component {
 		this.loaderProgress = this.loaderProgress.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
 
-		// Init exporter
+		// Init exporters
 		this.exporterSTL = new STLExporter();
+		this.exporterOBJ = new OBJExporter();
 
 		// Init default scene
 		this.scene = new THREE.Scene();
@@ -45,7 +47,7 @@ class View3D extends Component {
 	}
 
 	// extract scene and save object
-	save() {
+	save(fileFormat) {
 		console.log("Saving object");
 		// clone scene to remove hidden
 		let forSave = this.scene.clone();
@@ -63,6 +65,14 @@ class View3D extends Component {
 			o.parent.remove(o);
 		});
 		// return cleaned
+		switch (fileFormat) {
+			case "STL":
+				return this.exporterSTL.parse(forSave, {binary:true});
+			case "OBJ":
+				return this.exporterOBJ.parse(forSave)
+			default:
+				break;
+		}
 		return this.exporterSTL.parse(forSave, {binary:true});
 	}
 

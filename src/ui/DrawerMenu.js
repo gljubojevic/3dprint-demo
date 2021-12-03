@@ -35,13 +35,18 @@ class DrawerMenu extends Component {
 		this.setState({ isOpen: !this.state.isOpen });
 	}
 
-	save() {
+	save(e) {
 		if (null === this.props.save) {
 			console.error("No save handler set");
 			return;
 		}
+		// read from "data-value" attribute
+		let fileFormat = e.currentTarget.dataset.value;
+		if (!fileFormat) {
+			fileFormat = "STL" // default to STL format
+		}
 		this.setState({ isOpen:false });
-		this.props.save();
+		this.props.save(fileFormat);
 	}
 
 	toggleElement(e) {
@@ -69,9 +74,15 @@ class DrawerMenu extends Component {
 					<Divider />
 					<List component="nav" aria-label="main selector">
 						<ListItem>
-							<ListItemButton onClick={this.save}>
+							<ListItemButton onClick={this.save} data-value="STL">
 								<ListItemIcon><Save /></ListItemIcon>
-								<ListItemText primary="Save for print" />
+								<ListItemText primary="Save STL for print" />
+							</ListItemButton>
+						</ListItem>
+						<ListItem>
+							<ListItemButton onClick={this.save} data-value="OBJ">
+								<ListItemIcon><Save /></ListItemIcon>
+								<ListItemText primary="Save OBJ for print" />
 							</ListItemButton>
 						</ListItem>
 					</List>
