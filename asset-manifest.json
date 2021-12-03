@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/3dprint-demo/static/css/main.c65b7701.chunk.css",
-    "main.js": "/3dprint-demo/static/js/main.74d2964f.chunk.js",
-    "main.js.map": "/3dprint-demo/static/js/main.74d2964f.chunk.js.map",
+    "main.js": "/3dprint-demo/static/js/main.648739f7.chunk.js",
+    "main.js.map": "/3dprint-demo/static/js/main.648739f7.chunk.js.map",
     "runtime-main.js": "/3dprint-demo/static/js/runtime-main.14318f4c.js",
     "runtime-main.js.map": "/3dprint-demo/static/js/runtime-main.14318f4c.js.map",
-    "static/js/2.0d43a575.chunk.js": "/3dprint-demo/static/js/2.0d43a575.chunk.js",
-    "static/js/2.0d43a575.chunk.js.map": "/3dprint-demo/static/js/2.0d43a575.chunk.js.map",
+    "static/js/2.37dd39cd.chunk.js": "/3dprint-demo/static/js/2.37dd39cd.chunk.js",
+    "static/js/2.37dd39cd.chunk.js.map": "/3dprint-demo/static/js/2.37dd39cd.chunk.js.map",
     "static/js/3.94e1e5c3.chunk.js": "/3dprint-demo/static/js/3.94e1e5c3.chunk.js",
     "static/js/3.94e1e5c3.chunk.js.map": "/3dprint-demo/static/js/3.94e1e5c3.chunk.js.map",
     "index.html": "/3dprint-demo/index.html",
     "static/css/main.c65b7701.chunk.css.map": "/3dprint-demo/static/css/main.c65b7701.chunk.css.map",
-    "static/js/2.0d43a575.chunk.js.LICENSE.txt": "/3dprint-demo/static/js/2.0d43a575.chunk.js.LICENSE.txt"
+    "static/js/2.37dd39cd.chunk.js.LICENSE.txt": "/3dprint-demo/static/js/2.37dd39cd.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.14318f4c.js",
-    "static/js/2.0d43a575.chunk.js",
+    "static/js/2.37dd39cd.chunk.js",
     "static/css/main.c65b7701.chunk.css",
-    "static/js/main.74d2964f.chunk.js"
+    "static/js/main.648739f7.chunk.js"
   ]
 }
