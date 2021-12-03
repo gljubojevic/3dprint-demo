@@ -102,16 +102,34 @@ class View3D extends Component {
 		// start animation
 		this.animate();
 
+		// can we load
+		if (null === this.props.loadPath) {
+			return;
+		}
 		// kickstart loading
-		if (null === this.props.object3D) {
+		this.loadObject(this.props.object3D);
+		this.loadBackgroundCube(this.props.backgroundCube);
+	}
+
+	loadObject(filePath){
+		if (null === filePath) {
 			return;
 		}
 		this.loader.load(
-			this.props.object3D,
+			this.props.loadPath + filePath,
 			this.loaderOk,
 			undefined, //this.loaderProgress,
 			this.loaderError
 		);
+	}
+
+	loadBackgroundCube(filesCube) {
+		if (null === filesCube) {
+			return;
+		}
+		this.scene.background = new THREE.CubeTextureLoader()
+			.setPath(this.props.loadPath)
+			.load(filesCube);
 	}
 
 	animate() {
@@ -183,12 +201,16 @@ class View3D extends Component {
 }
 
 View3D.defaultProps = {
+	loadPath: null,
 	object3D: null,
+	backgroundCube: null,
 	availableElements: null
 }
 
 View3D.propTypes = {
+	loadPath: PropTypes.string,
 	object3D: PropTypes.string,
+	backgroundCube: PropTypes.array,
 	availableElements: PropTypes.func
 }
 

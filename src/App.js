@@ -63,7 +63,17 @@ class App extends Component {
 			<React.Fragment>
 				<AppTools toggleDrawer={this.toggleDrawer} />
 				<DrawerMenu ref={this.refDrawerMenu} save={this.save} availableElements={this.state.elements} toggleElement={this.toggleElement} />
-				<View3D ref={this.refView3D} object3D={process.env.PUBLIC_URL + "/objects/solider-demo.glb"} availableElements={this.availableElements} />
+				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
+					object3D="/objects/solider-demo.glb"
+					backgroundCube={[
+						'/textures/Brudslojan/posx.jpg',
+						'/textures/Brudslojan/negx.jpg',
+						'/textures/Brudslojan/posy.jpg',
+						'/textures/Brudslojan/negy.jpg',
+						'/textures/Brudslojan/posz.jpg',
+						'/textures/Brudslojan/negz.jpg'
+					]}
+					availableElements={this.availableElements} />
 			</React.Fragment>
 		);
 	}

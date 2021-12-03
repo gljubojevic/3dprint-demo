@@ -25,6 +25,11 @@ https://create-react-app.dev/
 Material UI  
 https://mui.com/
 
+# Assets used
+Background cube map.  
+This is the work of Emil Persson, aka Humus.  
+http://www.humus.name
+
 # References
 GitHub pages setup  
 https://create-react-app.dev/docs/deployment/#github-pages-https-pagesgithubcom
