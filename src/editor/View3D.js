@@ -128,11 +128,7 @@ class View3D extends Component {
 		// kickstart loading
 		this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
 		const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
-		//const refractionCube = this.loadBackgroundCube(this.props.backgroundCube);
-		//refractionCube.mapping = THREE.CubeRefractionMapping;
 
-		//this.cubeMaterial3 = new THREE.MeshLambertMaterial( { color: 0xff6600, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3 } );
-		//this.cubeMaterial2 = new THREE.MeshLambertMaterial( { color: 0xffee00, envMap: refractionCube, refractionRatio: 0.95 } );
 		this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
 		this.loadObject(this.props.object3D);
 	}
@@ -194,22 +190,20 @@ class View3D extends Component {
 	// called when object is loaded
 	loaderOk(gltf) {
 		console.log("Object loaded");
-		// find optional elemnets
+		// find optional elements
 		let el = [];
 		for (let i = 0; i < gltf.scene.children.length; i++) {
 			let obj = gltf.scene.children[i];
 			//console.log(obj);
 			//console.log(obj.name);
 
-			// skip main model marked with "-main" in name
+			// main object marked with "-main" in name is not added to optional list
 			if (obj.name.includes("-main")) {
-				// setup reflection material
-				//obj.material = this.cubeMaterial3;
-				//obj.material = this.cubeMaterial2;
-				obj.material = this.cubeMaterial1;
+				// cube reflection material for main model
+				//obj.material = this.cubeMaterial1;
 				continue;
 			}
-			// make non make element invisible
+			// make non main element invisible
 			obj.visible = false;
 			// add to list for hide/show
 			el.push({
