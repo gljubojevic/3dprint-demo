@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AppTools from './ui/AppTools';
 import DrawerMenu from './ui/DrawerMenu';
+import OptSelector from './ui/OptSelector';
 import View3D from './editor/View3D';
 import { saveAs } from 'file-saver';
 
@@ -43,28 +44,45 @@ class App extends Component {
 
 	// Get list of elements to hide and show
 	availableElements(elements) {
-		console.log(elements);
 		this.setState({elements:elements});
 	}
 
 	toggleElement(el) {
-		let newElements = this.state.elements.map((e)=>{
-			if (e.name === el.name) {
-				e.visible = el.visible;
+		const elNamePath = el.name.split('_');
+		let newGroups = this.state.elements.map((group)=> {
+			// check if same group on first element
+			const groupElNamePath = group[0].name.split('_');
+			// Not same group skip check
+			if (elNamePath[1] !== groupElNamePath[1]) {
+				return group
 			}
-			return e;
+
+			const isRadio = group.length > 1;
+			return group.map((e) => {
+				// change state of element
+				if (e.name === el.name) {
+					e.visible = el.visible;
+					this.refView3D.current.toggleElement(e);
+				} else {
+					// when is radio selection toggle invert previous selection
+					if (isRadio) {
+						e.visible = !el.visible;
+						this.refView3D.current.toggleElement(e);
+					}
+				}
+				return e;
+			});
 		});
-		this.setState({elements:newElements});
-		this.refView3D.current.toggleElement(el);
+		this.setState({elements:newGroups});
 	}
 
 	render() {
 		return (
 			<React.Fragment>
 				<AppTools toggleDrawer={this.toggleDrawer} />
-				<DrawerMenu ref={this.refDrawerMenu} save={this.save} availableElements={this.state.elements} toggleElement={this.toggleElement} />
+				<DrawerMenu ref={this.refDrawerMenu} save={this.save} />
 				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
-					object3D="/objects/solider-demo.glb"
+					object3D="/objects/rhodesia-solider.glb"
 					backgroundCube={[
 						'/textures/Brudslojan/posx.jpg',
 						'/textures/Brudslojan/negx.jpg',
@@ -74,6 +92,7 @@ class App extends Component {
 						'/textures/Brudslojan/negz.jpg'
 					]}
 					availableElements={this.availableElements} />
+				<OptSelector optElements={this.state.elements} toggleElement={this.toggleElement} />
 			</React.Fragment>
 		);
 	}

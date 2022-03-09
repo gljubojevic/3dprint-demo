@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import * as THREE from "three";
 import Box from '@mui/material/Box';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
@@ -27,21 +28,55 @@ class View3D extends Component {
 
 		// Init default scene
 		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.Color( 0xafafaf );
+		//this.scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
 
-		// Add light
+		// ground plane
+		if (this.props.showGroundPlane) {
+			const gp = new THREE.Mesh(
+				new THREE.PlaneGeometry(2, 2),
+				new THREE.MeshPhongMaterial( { color: 0x888888, depthWrite: false } ) 
+			);
+			gp.rotation.x = - Math.PI / 2;
+			gp.receiveShadow = true;
+			gp.name = "hlp_ground_plane";
+			this.scene.add(gp);
+		}
+
+		// Ligts from example
+		const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+		hemiLight.position.set( 0, 20, 0 );
+		this.scene.add( hemiLight );
+
+		//const dirLight = new THREE.DirectionalLight( 0xffffff );
+		//dirLight.position.set( - 3, 10, - 10 );
+		//dirLight.castShadow = true;
+		//dirLight.shadow.camera.top = 2;
+		//dirLight.shadow.camera.bottom = - 2;
+		//dirLight.shadow.camera.left = - 2;
+		//dirLight.shadow.camera.right = 2;
+		//dirLight.shadow.camera.near = 0.1;
+		//dirLight.shadow.camera.far = 40;
+		//this.scene.add( dirLight );
+		
 		this.dirLight1 = new THREE.DirectionalLight( 0xffffff );
-		this.dirLight1.position.set( 1, 1, 1 );
+		this.dirLight1.position.set( 2, 2, 2 );
 		this.scene.add( this.dirLight1 );
 
 		this.dirLight2 = new THREE.DirectionalLight( 0xffffff );
-		this.dirLight2.position.set( -1, -1, -1 );
+		this.dirLight2.position.set( -2, -2, -2 );
 		this.scene.add( this.dirLight2 );
 
-		this.ambientLight = new THREE.AmbientLight( 0x222222 );
-		this.scene.add( this.ambientLight );
+		//this.ambientLight = new THREE.AmbientLight( 0x222222 );
+		//this.scene.add( this.ambientLight );
 
-		// init object loader
+		// glTF decompressor, with path for decompression lib loading
+		const dracoLoader = new DRACOLoader()
+		dracoLoader.setDecoderPath(props.loadPath + '/libs/draco/')
+		//dracoLoader.setDecoderConfig({type: 'js'});	// (Optional) Override detection of WASM support.
+		// init object loader with decompressor
 		this.loader = new GLTFLoader();
+		this.loader.setDRACOLoader(dracoLoader)
 	}
 
 	// just empty div to add renderer
@@ -68,6 +103,9 @@ class View3D extends Component {
 		forSave.traverse(function(o){
 			if (!o.visible) {
 				console.log("To remove", o.name, o.id, o.uuid);
+				remove.push(o.id);
+			}
+			if (o.name.startsWith('hlp_')) {
 				remove.push(o.id);
 			}
 		});
@@ -98,9 +136,10 @@ class View3D extends Component {
 		this.camera.position.y = 0.20;
 		this.camera.position.z = 0.10;
 
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		//this.renderer.setPixelRatio( window.devicePixelRatio );	// doubles pixels?!?
 		this.renderer.setSize(rsize.width, rsize.height);
+		//this.renderer.shadowMap.enabled = true;
 		// use ref as a mount point of the Three.js scene instead of the document.body
 		this.refRenderer.current.appendChild( this.renderer.domElement );
 		// Add handler for resizing
@@ -126,10 +165,10 @@ class View3D extends Component {
 			return;
 		}
 		// kickstart loading
-		this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
-		const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
+		//this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
+		//const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
 
-		this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
+		//this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
 		this.loadObject(this.props.object3D);
 	}
 
@@ -188,35 +227,53 @@ class View3D extends Component {
 	};
 
 	// called when object is loaded
-	loaderOk(gltf) {
+	loaderOk(glTF) {
 		console.log("Object loaded");
+		//console.log(glTF);
+		this.loadedObject = glTF.scene;
+
 		// find optional elements
-		let el = [];
-		for (let i = 0; i < gltf.scene.children.length; i++) {
-			let obj = gltf.scene.children[i];
-			//console.log(obj);
-			//console.log(obj.name);
+		let elOpt=[];
+		this.findOptional(elOpt, this.loadedObject.children);
+		let grpOpt = this.groupOptional(elOpt);
+		// preselect optional elements
+		this.defaultOptional(grpOpt);
 
-			// main object marked with "-main" in name is not added to optional list
-			if (obj.name.includes("-main")) {
-				// cube reflection material for main model
-				//obj.material = this.cubeMaterial1;
-				continue;
-			}
-			// make non main element invisible
-			obj.visible = false;
-			// add to list for hide/show
-			el.push({
-				name: obj.name,
-				visible: false
-			});
+		const omat = new THREE.MeshPhongMaterial( { color: 0x226622, flatShading: true } )
+		// enable shadow and set material, must have directional light, calc bounding box
+		let bb = new THREE.Box3();
+		this.loadedObject.traverse( function(object) {
+			if ( !object.isMesh ) { return; }
+			//object.castShadow = true;
+			object.material = omat;
+			// calc bounding box
+			bb.expandByObject(object);
+		});
+
+		// display bounding box
+		if (this.props.showBoundingBox) {
+			const box = new THREE.Box3Helper(bb, 0xff0000)
+			box.name = "hlp_bounding_box";
+			this.scene.add( box );
 		}
-		this.loadedObject = gltf.scene;
-		this.scene.add(this.loadedObject);
 
+		// visible skeleton
+		if (this.props.showSkeleton) {
+			const skeleton = new THREE.SkeletonHelper(this.loadedObject);
+			skeleton.name = 'hlp_skeleton';
+			skeleton.visible = true;
+			this.scene.add( skeleton );
+		}
+
+		// adjust camera to object loaded
+		this.cameraToBBox(bb, this.camera, this.controls);
+
+		// set scene for display
+		this.scene.add(this.loadedObject);
+		
 		// Call changed list of models
 		if (null !== this.props.availableElements) {
-			this.props.availableElements(el);
+			this.props.availableElements(grpOpt);
 		}
 	}
 
@@ -230,23 +287,141 @@ class View3D extends Component {
 		console.error(error);
 	}
 
-	// toggle visible element
-	// check for traversing scene..
+	// finds optional objects, and hide them, this is recursive process, 
+	// only hides objects starting with name prefix "opt_"
+	findOptional(elOpt, children) {
+		for (let i = 0; i < children.length; i++) {
+			let obj = children[i];
+			//console.log(obj.name, "children ->", obj.children.length);
+			// do recursive
+			if (obj.children.length > 0) {
+				this.findOptional(elOpt, obj.children);
+			}
+			// skip non optional objects
+			if (!obj.name.startsWith("opt_")) {
+				continue;
+			}
+			// hide optional objects
+			obj.visible = false;
+			// add to list for hide/show
+			elOpt.push({
+				name: obj.name,
+				visible: false
+			});
+		}
+	}
+
+	// Groups all optional elements for selection UI
+	groupOptional(elOpt) {
+		let grpOpt = [];
+		if (0 === elOpt.length) {
+			return grpOpt;
+		}
+		// sort before grouping
+		elOpt.sort((a,b) => {
+			if (a.name < b.name) { return -1; }
+			if (a.name > b.name) { return 1; }
+			return 0;
+		});
+
+		let grp = [];
+		let elCur = elOpt[0];
+		let elPrev = elCur;
+		grp.push(elCur);
+
+		for (let i = 1; i < elOpt.length; i++) {
+			elCur = elOpt[i];
+
+			// split names to get category info
+			// 2nd is category if matches it is same category
+			let prevNameParts = elPrev.name.split('_');
+			let curNameParts = elCur.name.split('_');
+
+			// check for different category
+			if (prevNameParts[1] !== curNameParts[1]) {
+				grpOpt.push(grp);
+				grp = [];
+			}
+
+			grp.push(elCur);
+			elPrev = elCur;
+		}
+
+		grpOpt.push(grp);
+		return grpOpt;
+	}
+
+	// makes default selection
+	defaultOptional(grpOpt) {
+		for (let i = 0; i < grpOpt.length; i++) {
+			// skip preselect when only one optional element in group
+			if (1 === grpOpt[i].length) {
+				continue;
+			}
+			// preselect first in group
+			grpOpt[i][0].visible = true;
+			this.toggleElement(grpOpt[i][0]);
+		}
+	}
+
+	// toggle visible element, check for traversing scene..
 	// https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/STLExporter.js
 	toggleElement(el) {
 		console.log("Toggle visible", el);
-		let sc = this.loadedObject;
-		for (let i = 0; i < sc.children.length; i++) {
-			if (sc.children[i].name === el.name) {
-				sc.children[i].visible = el.visible;
+		this.toggleElementRecursive(el, this.loadedObject);
+	}
+
+	toggleElementRecursive(el, ob) {
+		if (ob.name === el.name) {
+			ob.visible = el.visible;
+			return;
+		}
+		for (let i = 0; i < ob.children.length; i++) {
+			if (ob.children[i].name === el.name) {
+				ob.children[i].visible = el.visible;
+			}
+			if (0 < ob.children[i].children.length) {
+				this.toggleElementRecursive(el, ob.children[i]);
 			}
 		}
+	}
+
+	// point camera and controls to bounding box
+	cameraToBBox(box, camera, controls, fitOffset = 1.2) {
+		const size = new THREE.Vector3();
+		const center = new THREE.Vector3();
+		box.getSize(size);
+		box.getCenter(center );
+
+		const maxSize = Math.max(size.x, size.y, size.z);
+		const fitHeightDistance = maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
+		const fitWidthDistance = fitHeightDistance / camera.aspect;
+		const distance = fitOffset * Math.max(fitHeightDistance, fitWidthDistance);
+
+		const direction = controls.target.clone()
+			.sub(camera.position)
+			.normalize()
+			.multiplyScalar(distance);
+
+		controls.maxDistance = distance * 10;
+		controls.target.copy(center);
+
+		camera.near = distance / 100;
+		camera.far = distance * 100;
+		camera.updateProjectionMatrix();
+
+		camera.position.copy(controls.target).sub(direction);
+
+		controls.update();
 	}
 }
 
 View3D.defaultProps = {
 	loadPath: null,
 	object3D: null,
+	showBoundingBox: false,
+	showSkeleton: false,
+	showGroundPlane: true,
 	backgroundCube: null,
 	availableElements: null
 }
@@ -254,6 +429,9 @@ View3D.defaultProps = {
 View3D.propTypes = {
 	loadPath: PropTypes.string,
 	object3D: PropTypes.string,
+	showBoundingBox: PropTypes.bool,
+	showSkeleton: PropTypes.bool,
+	showGroundPlane: PropTypes.bool,
 	backgroundCube: PropTypes.array,
 	availableElements: PropTypes.func
 }
