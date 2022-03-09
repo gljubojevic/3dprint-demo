@@ -266,7 +266,7 @@ class View3D extends Component {
 		}
 
 		// adjust camera to object loaded
-		this.cameraToBBox(bb, this.camera, this.controls);
+		this.cameraToBBox(bb, this.camera, this.controls, 1.0);
 
 		// set scene for display
 		this.scene.add(this.loadedObject);
