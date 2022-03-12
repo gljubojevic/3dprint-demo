@@ -17,6 +17,7 @@ class View3D extends Component {
 		this.save = this.save.bind(this);
 		this.animate = this.animate.bind(this);
 		this.loaderOk = this.loaderOk.bind(this);
+		this.loaderAnimOk = this.loaderAnimOk.bind(this);
 		this.loaderError = this.loaderError.bind(this);
 		this.loaderProgress = this.loaderProgress.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
@@ -25,6 +26,10 @@ class View3D extends Component {
 		// Init exporters
 		this.exporterSTL = new STLExporter();
 		this.exporterOBJ = new OBJExporter();
+
+		// init animation clock
+		this.clock = new THREE.Clock();
+		this.animMixer = null;
 
 		// Init default scene
 		this.scene = new THREE.Scene();
@@ -212,6 +217,20 @@ class View3D extends Component {
 		);
 	}
 
+
+	loadAnimation(filePath) {
+		if (null === filePath) {
+			return;
+		}
+		this.loader.load(
+			this.props.loadPath + filePath,
+			this.loaderAnimOk,
+			undefined, //this.loaderProgress,
+			this.loaderError
+		);
+	}
+
+
 	loadBackgroundCube(filesCube) {
 		if (null === filesCube) {
 			return;
@@ -223,6 +242,15 @@ class View3D extends Component {
 
 	animate() {
 		requestAnimationFrame( this.animate );
+
+		// only when object is loaded and we have mixer
+		if (null !== this.animMixer) {
+			// Get the time elapsed since the last frame, used for mixer update (if not in single step mode)
+			let mixerUpdateDelta = this.clock.getDelta();
+			// Update the animation mixer, the stats panel, and render this frame
+			this.animMixer.update( mixerUpdateDelta / 2 );
+		}
+		
 		this.renderer.render( this.scene, this.camera );
 	};
 
@@ -270,11 +298,17 @@ class View3D extends Component {
 
 		// set scene for display
 		this.scene.add(this.loadedObject);
+
+		// create mixer for animations
+		this.animMixer = new THREE.AnimationMixer(this.loadedObject);
 		
 		// Call changed list of models
 		if (null !== this.props.availableElements) {
 			this.props.availableElements(grpOpt);
 		}
+
+		// call animation loading
+		this.loadAnimation('/anims/walking.gltf');
 	}
 
 	// called while loading is progressing
@@ -285,6 +319,13 @@ class View3D extends Component {
 	// called when object load fails
 	loaderError(error) {
 		console.error(error);
+	}
+
+	// animation is loaded
+	loaderAnimOk(glTF) {
+		console.log(glTF);
+		const act = this.animMixer.clipAction(glTF.animations[0]);
+		act.play();
 	}
 
 	// finds optional objects, and hide them, this is recursive process, 
