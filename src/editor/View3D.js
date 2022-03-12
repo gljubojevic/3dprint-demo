@@ -404,22 +404,11 @@ class View3D extends Component {
 	// https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/STLExporter.js
 	toggleElement(el) {
 		console.log("Toggle visible", el);
-		this.toggleElementRecursive(el, this.loadedObject);
-	}
-
-	toggleElementRecursive(el, ob) {
-		if (ob.name === el.name) {
-			ob.visible = el.visible;
-			return;
-		}
-		for (let i = 0; i < ob.children.length; i++) {
-			if (ob.children[i].name === el.name) {
-				ob.children[i].visible = el.visible;
+		this.loadedObject.traverse( function(obj) {
+			if (obj.name === el.name) {
+				obj.visible = el.visible;
 			}
-			if (0 < ob.children[i].children.length) {
-				this.toggleElementRecursive(el, ob.children[i]);
-			}
-		}
+		});
 	}
 
 	// point camera and controls to bounding box
