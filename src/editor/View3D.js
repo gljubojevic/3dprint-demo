@@ -261,9 +261,7 @@ class View3D extends Component {
 		this.loadedObject = glTF.scene;
 
 		// find optional elements
-		let elOpt=[];
-		this.findOptional(elOpt, this.loadedObject.children);
-		let grpOpt = this.groupOptional(elOpt);
+		let grpOpt = this.findOptional();
 		// preselect optional elements
 		this.defaultOptional(grpOpt);
 
@@ -328,19 +326,14 @@ class View3D extends Component {
 		act.play();
 	}
 
-	// finds optional objects, and hide them, this is recursive process, 
+	// finds optional objects, and hide them 
 	// only hides objects starting with name prefix "opt_"
-	findOptional(elOpt, children) {
-		for (let i = 0; i < children.length; i++) {
-			let obj = children[i];
-			//console.log(obj.name, "children ->", obj.children.length);
-			// do recursive
-			if (obj.children.length > 0) {
-				this.findOptional(elOpt, obj.children);
-			}
+	findOptional() {
+		let elOpt=[];
+		this.loadedObject.traverse( function(obj) {
 			// skip non optional objects
 			if (!obj.name.startsWith("opt_")) {
-				continue;
+				return;
 			}
 			// hide optional objects
 			obj.visible = false;
@@ -349,7 +342,9 @@ class View3D extends Component {
 				name: obj.name,
 				visible: false
 			});
-		}
+		});
+
+		return this.groupOptional(elOpt);
 	}
 
 	// Groups all optional elements for selection UI
