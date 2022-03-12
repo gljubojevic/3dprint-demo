@@ -2750,7 +2750,7 @@
                     }
                 }
             ],
-            "name" : "Armature|mixamo.com|Layer0.016",
+            "name" : "Walking backwards",
             "samplers" : [
                 {
                     "input" : 0,
