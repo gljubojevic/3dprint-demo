@@ -22,6 +22,7 @@ class View3D extends Component {
 		this.loaderProgress = this.loaderProgress.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
 		this.onWindowResize = this.onWindowResize.bind(this);
+		this.animations = [];
 
 		// Init exporters
 		this.exporterSTL = new STLExporter();
@@ -305,8 +306,13 @@ class View3D extends Component {
 			this.props.availableElements(grpOpt);
 		}
 
+		// clear all previous animations
+		this.animations = [];
 		// call animation loading
-		this.loadAnimation('/anims/walking.gltf');
+		for (let i = 0; i < this.props.animPoses.length; i++) {
+			//console.log("Loading anim", this.props.animPoses[i]);
+			this.loadAnimation(this.props.animPoses[i]);
+		}
 	}
 
 	// called while loading is progressing
@@ -321,9 +327,30 @@ class View3D extends Component {
 
 	// animation is loaded
 	loaderAnimOk(glTF) {
-		console.log(glTF);
-		const act = this.animMixer.clipAction(glTF.animations[0]);
+		//console.log(glTF);
+		// init action
+		const anim = glTF.animations[0];
+		const act = this.animMixer.clipAction(anim);
+		act.enabled = false;
 		act.play();
+		// add animation to list
+		this.animations.push({
+			name: anim.name,
+			action: act
+		});
+		// check all loaded to push list
+		if (this.props.animPoses.length !== this.animations.length) {
+			return;
+		}
+		// crate anim selection
+		let animSelect = [];
+		animSelect.push({ name: 'None', enabled: true });
+		for (let i = 0; i < this.animations.length; i++) {
+			animSelect.push({ name: this.animations[i].name, enabled: false });
+		}
+		if (null !== this.props.availableAnimations) {
+			this.props.availableAnimations(animSelect);
+		}
 	}
 
 	// finds optional objects, and hide them 
@@ -411,6 +438,13 @@ class View3D extends Component {
 		});
 	}
 
+	toggleAnimation(name) {
+		console.log("Toggle animation", name);
+		for (let i = 0; i < this.animations.length; i++) {
+			this.animations[i].action.enabled = this.animations[i].name === name;
+		}
+	}
+
 	// point camera and controls to bounding box
 	cameraToBBox(box, camera, controls, fitOffset = 1.2) {
 		const size = new THREE.Vector3();
@@ -444,21 +478,25 @@ class View3D extends Component {
 View3D.defaultProps = {
 	loadPath: null,
 	object3D: null,
+	animPoses: null,
 	showBoundingBox: false,
 	showSkeleton: false,
 	showGroundPlane: true,
 	backgroundCube: null,
-	availableElements: null
+	availableElements: null,
+	availableAnimations: null
 }
 
 View3D.propTypes = {
 	loadPath: PropTypes.string,
 	object3D: PropTypes.string,
+	animPoses: PropTypes.array,
 	showBoundingBox: PropTypes.bool,
 	showSkeleton: PropTypes.bool,
 	showGroundPlane: PropTypes.bool,
 	backgroundCube: PropTypes.array,
-	availableElements: PropTypes.func
+	availableElements: PropTypes.func,
+	availableAnimations: PropTypes.func
 }
 
 export default View3D;

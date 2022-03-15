@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
@@ -71,8 +70,8 @@ class OptSelector extends Component {
 		});
 	}
 
-	renderSelectors(allOpt) {
-		return allOpt.map((opts, idx) => {
+	render() {
+		return this.props.optElements.map((opts, idx) => {
 			const key = "opt_" + idx;
 			const label = opts[0].name.split('_')[1];
 			return (
@@ -84,20 +83,6 @@ class OptSelector extends Component {
 				</Paper>
 			);
 		});
-	}
-
-	render() {
-		return (
-			<Box sx={{ 
-				width: 1/5,
-				m: 2,
-				zIndex: 'appBar', 
-				position: 'absolute', 
-				top: (theme) => theme.mixins.toolbar.minHeight + 'px'
-			}}>
-				{this.renderSelectors(this.props.optElements)}
-			</Box>
-		);
 	}
 }
 

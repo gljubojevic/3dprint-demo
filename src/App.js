@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import AppTools from './ui/AppTools';
 import DrawerMenu from './ui/DrawerMenu';
-import OptSelector from './ui/OptSelector';
+import MainSelector from './ui/MainSelector';
 import View3D from './editor/View3D';
 import { saveAs } from 'file-saver';
 
@@ -10,6 +10,7 @@ class App extends Component {
 		super(props);
 		this.state = {
 			elements: [],
+			animations: []
 		}
 		this.refDrawerMenu = React.createRef();
 		this.refView3D = React.createRef();
@@ -17,6 +18,8 @@ class App extends Component {
 		this.save = this.save.bind(this);
 		this.availableElements = this.availableElements.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
+		this.availableAnimations = this.availableAnimations.bind(this);
+		this.toggleAnimation = this.toggleAnimation.bind(this);
 	}
 
 	toggleDrawer(e) {
@@ -42,7 +45,7 @@ class App extends Component {
 		}
 	}
 
-	// Get list of elements to hide and show
+	// Set list of elements to hide and show
 	availableElements(elements) {
 		this.setState({elements:elements});
 	}
@@ -76,6 +79,20 @@ class App extends Component {
 		this.setState({elements:newGroups});
 	}
 
+	// Set list of animations for selection
+	availableAnimations(animations) {
+		this.setState({animations:animations});
+	}
+	
+	toggleAnimation(name) {
+		let anims = this.state.animations.map((a) => {
+			a.enabled = a.name === name;
+			return a;
+		})
+		this.refView3D.current.toggleAnimation(name);
+		this.setState({animations:anims});
+	}
+
 	render() {
 		return (
 			<React.Fragment>
@@ -91,8 +108,25 @@ class App extends Component {
 						'/textures/Brudslojan/posz.jpg',
 						'/textures/Brudslojan/negz.jpg'
 					]}
-					availableElements={this.availableElements} />
-				<OptSelector optElements={this.state.elements} toggleElement={this.toggleElement} />
+					animPoses={[
+						'/anims/fire_rifle.gltf',
+						'/anims/hit_reaction.gltf',
+						'/anims/reloading.gltf',
+						'/anims/rifle_aiming.gltf',
+						'/anims/rifle_jump.gltf',
+						'/anims/rifle_run.gltf',
+						'/anims/run_backwards.gltf',
+						'/anims/starfe_left.gltf',
+						'/anims/starfe_right.gltf',
+						'/anims/toss_grenade.gltf',
+						'/anims/turn_left.gltf',
+						'/anims/turn_right.gltf',
+						'/anims/walking_backwards.gltf',
+						'/anims/walking.gltf'
+					]}
+					availableElements={this.availableElements}
+					availableAnimations={this.availableAnimations} />
+				<MainSelector optElements={this.state.elements} toggleElement={this.toggleElement} optAnimations={this.state.animations} toggleAnimation={this.toggleAnimation} />
 			</React.Fragment>
 		);
 	}
