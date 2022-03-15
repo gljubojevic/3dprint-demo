@@ -171,10 +171,13 @@ class View3D extends Component {
 			return;
 		}
 		// kickstart loading
-		//this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
-		//const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
+		if (this.props.backgroundCube.length > 0) {
+			this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
+		}
 
+		//const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
 		//this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
+
 		this.loadObject(this.props.object3D);
 	}
 

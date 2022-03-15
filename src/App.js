@@ -94,36 +94,42 @@ class App extends Component {
 	}
 
 	render() {
+		// Cubemaps
+		const bgCube=[];
+		//const bgCube=[
+		//	'/textures/Brudslojan/posx.jpg',
+		//	'/textures/Brudslojan/negx.jpg',
+		//	'/textures/Brudslojan/posy.jpg',
+		//	'/textures/Brudslojan/negy.jpg',
+		//	'/textures/Brudslojan/posz.jpg',
+		//	'/textures/Brudslojan/negz.jpg'
+		//];
+
+		const animPoses=[
+			'/anims/fire_rifle.gltf',
+			'/anims/hit_reaction.gltf',
+			'/anims/reloading.gltf',
+			'/anims/rifle_aiming.gltf',
+			'/anims/rifle_jump.gltf',
+			'/anims/rifle_run.gltf',
+			'/anims/run_backwards.gltf',
+			'/anims/starfe_left.gltf',
+			'/anims/starfe_right.gltf',
+			'/anims/toss_grenade.gltf',
+			'/anims/turn_left.gltf',
+			'/anims/turn_right.gltf',
+			'/anims/walking_backwards.gltf',
+			'/anims/walking.gltf'
+		];
+
 		return (
 			<React.Fragment>
 				<AppTools toggleDrawer={this.toggleDrawer} />
 				<DrawerMenu ref={this.refDrawerMenu} save={this.save} />
 				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
 					object3D="/objects/rhodesia-solider.glb"
-					backgroundCube={[
-						'/textures/Brudslojan/posx.jpg',
-						'/textures/Brudslojan/negx.jpg',
-						'/textures/Brudslojan/posy.jpg',
-						'/textures/Brudslojan/negy.jpg',
-						'/textures/Brudslojan/posz.jpg',
-						'/textures/Brudslojan/negz.jpg'
-					]}
-					animPoses={[
-						'/anims/fire_rifle.gltf',
-						'/anims/hit_reaction.gltf',
-						'/anims/reloading.gltf',
-						'/anims/rifle_aiming.gltf',
-						'/anims/rifle_jump.gltf',
-						'/anims/rifle_run.gltf',
-						'/anims/run_backwards.gltf',
-						'/anims/starfe_left.gltf',
-						'/anims/starfe_right.gltf',
-						'/anims/toss_grenade.gltf',
-						'/anims/turn_left.gltf',
-						'/anims/turn_right.gltf',
-						'/anims/walking_backwards.gltf',
-						'/anims/walking.gltf'
-					]}
+					backgroundCube={bgCube}
+					animPoses={animPoses}
 					availableElements={this.availableElements}
 					availableAnimations={this.availableAnimations} />
 				<MainSelector optElements={this.state.elements} toggleElement={this.toggleElement} optAnimations={this.state.animations} toggleAnimation={this.toggleAnimation} />
