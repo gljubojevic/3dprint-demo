@@ -122,14 +122,12 @@ class View3D extends Component {
 		});
 		// return cleaned
 		switch (fileFormat) {
-			case "STL":
-				return this.exporterSTL.parse(forSave, {binary:true});
 			case "OBJ":
 				return this.exporterOBJ.parse(forSave)
+			case "STL":
 			default:
-				break;
+				return this.exporterSTL.parse(forSave, {binary:true});
 		}
-		return this.exporterSTL.parse(forSave, {binary:true});
 	}
 
 	// init three.js renderer
