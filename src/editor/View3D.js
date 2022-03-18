@@ -335,12 +335,9 @@ class View3D extends Component {
 
 	// animation is loaded
 	loaderAnimOk(glTF) {
-		//console.log(glTF);
+		console.log(glTF);
 		// init action
 		const anim = glTF.animations[0];
-		const act = this.animMixer.clipAction(anim);
-		act.enabled = false;
-		act.play();
 
 		// find max frame count and frame time
 		let frames = 0;
@@ -352,6 +349,15 @@ class View3D extends Component {
 			}
 		});
 
+		// remove model positioning
+		if (this.props.animDisableMove) {
+			anim.tracks = anim.tracks.filter(t => t.name !== "mixamorigHips.position")
+		}
+
+		const act = this.animMixer.clipAction(anim);
+		act.enabled = false;
+		act.play();
+
 		// add animation to list
 		this.animations.push({
 			name: anim.name,
@@ -359,6 +365,7 @@ class View3D extends Component {
 			frames: frames,
 			frameTime: frameTime
 		});
+
 		// check all loaded to push list
 		if (this.props.animPoses.length !== this.animations.length) {
 			return;
@@ -523,7 +530,8 @@ View3D.defaultProps = {
 	backgroundCube: null,
 	availableElements: null,
 	availableAnimations: null,
-	animSingleStep: true
+	animSingleStep: true,
+	animDisableMove: true
 }
 
 View3D.propTypes = {
@@ -536,7 +544,8 @@ View3D.propTypes = {
 	backgroundCube: PropTypes.array,
 	availableElements: PropTypes.func,
 	availableAnimations: PropTypes.func,
-	animSingleStep: PropTypes.bool
+	animSingleStep: PropTypes.bool,
+	animDisableMove: PropTypes.bool
 }
 
 export default View3D;
