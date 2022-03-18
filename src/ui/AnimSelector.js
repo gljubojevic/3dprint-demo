@@ -45,7 +45,7 @@ class AnimSelector extends Component {
 			return null;
 		}
 
-		const lbl = `SELECT FRAME (${o.frames} frames, ${Math.round(1 / o.frameTime, 2)}fps)`
+		const lbl = `SELECT FRAME (${o.frames} frm / ${Math.round(1 / o.frameTime, 2)}fps)`
 
 		return (
 			<Paper sx={{p: 1, m: 1, opacity: 0.8 }}>
