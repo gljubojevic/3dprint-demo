@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/3dprint-demo/static/css/main.c65b7701.chunk.css",
-    "main.js": "/3dprint-demo/static/js/main.3bb713c7.chunk.js",
-    "main.js.map": "/3dprint-demo/static/js/main.3bb713c7.chunk.js.map",
+    "main.js": "/3dprint-demo/static/js/main.4ac66a97.chunk.js",
+    "main.js.map": "/3dprint-demo/static/js/main.4ac66a97.chunk.js.map",
     "runtime-main.js": "/3dprint-demo/static/js/runtime-main.7cb7052b.js",
     "runtime-main.js.map": "/3dprint-demo/static/js/runtime-main.7cb7052b.js.map",
     "static/js/2.50f29a21.chunk.js": "/3dprint-demo/static/js/2.50f29a21.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.7cb7052b.js",
     "static/js/2.50f29a21.chunk.js",
     "static/css/main.c65b7701.chunk.css",
-    "static/js/main.3bb713c7.chunk.js"
+    "static/js/main.4ac66a97.chunk.js"
   ]
 }
