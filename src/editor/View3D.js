@@ -21,6 +21,7 @@ class View3D extends Component {
 		this.loaderError = this.loaderError.bind(this);
 		this.loaderProgress = this.loaderProgress.bind(this);
 		this.toggleElement = this.toggleElement.bind(this);
+		this.setAnimationTime = this.setAnimationTime.bind(this);
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.animations = [];
 
@@ -31,6 +32,7 @@ class View3D extends Component {
 		// init animation clock
 		this.clock = new THREE.Clock();
 		this.animMixer = null;
+		this.animTime = 0;
 
 		// Init default scene
 		this.scene = new THREE.Scene();
@@ -247,10 +249,15 @@ class View3D extends Component {
 
 		// only when object is loaded and we have mixer
 		if (null !== this.animMixer) {
-			// Get the time elapsed since the last frame, used for mixer update (if not in single step mode)
-			let mixerUpdateDelta = this.clock.getDelta();
-			// Update the animation mixer, the stats panel, and render this frame
-			this.animMixer.update( mixerUpdateDelta / 2 );
+			if (this.props.animSingleStep) {
+				// for single step use time set
+				this.animMixer.setTime(this.animTime);
+			} else {
+				// Get the time elapsed since the last frame, used for mixer update (if not in single step mode)
+				let mixerUpdateDelta = this.clock.getDelta();
+				// Update the animation mixer, the stats panel, and render this frame
+				this.animMixer.update( mixerUpdateDelta / 2 );
+			}
 		}
 		
 		this.renderer.render( this.scene, this.camera );
@@ -334,20 +341,44 @@ class View3D extends Component {
 		const act = this.animMixer.clipAction(anim);
 		act.enabled = false;
 		act.play();
+
+		// find max frame count and frame time
+		let frames = 0;
+		let frameTime = 0;
+		anim.tracks.forEach((t) => {
+			if (t.times.length > frames) {
+				frames = t.times.length;
+				frameTime = t.times[0];
+			}
+		});
+
 		// add animation to list
 		this.animations.push({
 			name: anim.name,
-			action: act
+			action: act,
+			frames: frames,
+			frameTime: frameTime
 		});
 		// check all loaded to push list
 		if (this.props.animPoses.length !== this.animations.length) {
 			return;
 		}
+
 		// crate anim selection
 		let animSelect = [];
-		animSelect.push({ name: 'None', enabled: true });
+		animSelect.push({
+			name: 'None', 
+			enabled: true,
+			frames: 0,
+			frameTime: 0
+		});
 		for (let i = 0; i < this.animations.length; i++) {
-			animSelect.push({ name: this.animations[i].name, enabled: false });
+			animSelect.push({
+				name: this.animations[i].name,
+				enabled: false,
+				frames: this.animations[i].frames,
+				frameTime: this.animations[i].frameTime
+			});
 		}
 		if (null !== this.props.availableAnimations) {
 			this.props.availableAnimations(animSelect);
@@ -444,6 +475,12 @@ class View3D extends Component {
 		for (let i = 0; i < this.animations.length; i++) {
 			this.animations[i].action.enabled = this.animations[i].name === name;
 		}
+		// reset current animation position
+		this.animTime = 0;
+	}
+
+	setAnimationTime(time) {
+		this.animTime = time;
 	}
 
 	// point camera and controls to bounding box
@@ -485,7 +522,8 @@ View3D.defaultProps = {
 	showGroundPlane: true,
 	backgroundCube: null,
 	availableElements: null,
-	availableAnimations: null
+	availableAnimations: null,
+	animSingleStep: true
 }
 
 View3D.propTypes = {
@@ -497,7 +535,8 @@ View3D.propTypes = {
 	showGroundPlane: PropTypes.bool,
 	backgroundCube: PropTypes.array,
 	availableElements: PropTypes.func,
-	availableAnimations: PropTypes.func
+	availableAnimations: PropTypes.func,
+	animSingleStep: PropTypes.bool
 }
 
 export default View3D;

@@ -20,6 +20,7 @@ class App extends Component {
 		this.toggleElement = this.toggleElement.bind(this);
 		this.availableAnimations = this.availableAnimations.bind(this);
 		this.toggleAnimation = this.toggleAnimation.bind(this);
+		this.setAnimationTime = this.setAnimationTime.bind(this);
 	}
 
 	toggleDrawer(e) {
@@ -93,6 +94,10 @@ class App extends Component {
 		this.setState({animations:anims});
 	}
 
+	setAnimationTime(time) {
+		this.refView3D.current.setAnimationTime(time);
+	}
+
 	render() {
 		// Cubemaps
 		const bgCube=[];
@@ -132,7 +137,12 @@ class App extends Component {
 					animPoses={animPoses}
 					availableElements={this.availableElements}
 					availableAnimations={this.availableAnimations} />
-				<MainSelector optElements={this.state.elements} toggleElement={this.toggleElement} optAnimations={this.state.animations} toggleAnimation={this.toggleAnimation} />
+				<MainSelector 
+					optElements={this.state.elements}
+					toggleElement={this.toggleElement}
+					optAnimations={this.state.animations}
+					toggleAnimation={this.toggleAnimation}
+					setAnimationTime={this.setAnimationTime} />
 			</React.Fragment>
 		);
 	}

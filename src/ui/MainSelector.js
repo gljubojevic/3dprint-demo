@@ -41,7 +41,7 @@ class MainSelector extends Component {
 			return null;
 		}
 		return (
-			<AnimSelector animPoses={this.props.optAnimations} toggleAnim={this.props.toggleAnimation} />
+			<AnimSelector animPoses={this.props.optAnimations} toggleAnim={this.props.toggleAnimation} setAnimTime={this.props.setAnimationTime} />
 		);
 	}
 
@@ -112,14 +112,16 @@ MainSelector.defaultProps = {
 	optElements: [],
 	toggleElement: null,
 	optAnimations: [],
-	toggleAnimation: null
+	toggleAnimation: null,
+	setAnimationTime: null
 }
 
 MainSelector.propTypes = {
 	optElements: PropTypes.array,
 	toggleElement: PropTypes.func,
 	optAnimations: PropTypes.array,
-	toggleAnimation: PropTypes.func
+	toggleAnimation: PropTypes.func,
+	setAnimationTime: PropTypes.func
 }
 
 export default MainSelector;
