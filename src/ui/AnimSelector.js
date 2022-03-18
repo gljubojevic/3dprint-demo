@@ -108,13 +108,13 @@ class AnimSelector extends Component {
 		const opts = this.props.animPoses;
 		return (
 			<React.Fragment>
-				{this.renderAnimFrames(opts)}
 				<Paper sx={{p: 1, m: 1, opacity: 0.8 }}>
 					<FormControl>
 						<FormLabel component="legend">SELECT POSE</FormLabel>
 						{this.renderRadioSelect(opts)}
 					</FormControl>
 				</Paper>
+				{this.renderAnimFrames(opts)}
 			</React.Fragment>
 		);
 	}
