@@ -32,7 +32,7 @@ class MainSelector extends Component {
 			return null;
 		}
 		return (
-			<OptSelector optElements={this.props.optElements} toggleElement={this.props.toggleElement} />
+			<OptSelector elementGroups={this.props.elementGroups} toggleElement={this.props.toggleElement} />
 		);
 	}
 
@@ -109,7 +109,7 @@ class MainSelector extends Component {
 }
 
 MainSelector.defaultProps = {
-	optElements: [],
+	elementGroups: [],
 	toggleElement: null,
 	optAnimations: [],
 	toggleAnimation: null,
@@ -117,7 +117,7 @@ MainSelector.defaultProps = {
 }
 
 MainSelector.propTypes = {
-	optElements: PropTypes.array,
+	elementGroups: PropTypes.array,
 	toggleElement: PropTypes.func,
 	optAnimations: PropTypes.array,
 	toggleAnimation: PropTypes.func,

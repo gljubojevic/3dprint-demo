@@ -9,7 +9,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			elements: [],
+			elementGroups: [],
 			animations: []
 		}
 		this.refDrawerMenu = React.createRef();
@@ -46,25 +46,23 @@ class App extends Component {
 		}
 	}
 
-	// Set list of elements to hide and show
-	availableElements(elements) {
-		this.setState({elements:elements});
+	// Set list of grouped elements to hide and show
+	availableElements(groups) {
+		this.setState({elementGroups:groups});
 	}
 
 	toggleElement(el) {
-		const elNamePath = el.name.split('_');
-		let newGroups = this.state.elements.map((group)=> {
-			// check if same group on first element
-			const groupElNamePath = group[0].name.split('_');
+		const namePath = el.key.split('_');
+		let newGroups = this.state.elementGroups.map((groupDef)=> {
 			// Not same group skip check
-			if (elNamePath[1] !== groupElNamePath[1]) {
-				return group
+			if (namePath[1] !== groupDef[0]) {
+				return groupDef
 			}
-
-			const isRadio = group.length > 1;
-			return group.map((e) => {
+			const group = groupDef[1];
+			const isRadio = group.items.length > 1;
+			group.items = group.items.map((e) => {
 				// change state of element
-				if (e.name === el.name) {
+				if (e.key === el.key) {
 					e.visible = el.visible;
 					this.refView3D.current.toggleElement(e);
 				} else {
@@ -76,8 +74,9 @@ class App extends Component {
 				}
 				return e;
 			});
+			return groupDef;
 		});
-		this.setState({elements:newGroups});
+		this.setState({elementGroups:newGroups});
 	}
 
 	// Set list of animations for selection
@@ -138,7 +137,7 @@ class App extends Component {
 					availableElements={this.availableElements}
 					availableAnimations={this.availableAnimations} />
 				<MainSelector 
-					optElements={this.state.elements}
+					elementGroups={this.state.elementGroups}
 					toggleElement={this.toggleElement}
 					optAnimations={this.state.animations}
 					toggleAnimation={this.toggleAnimation}

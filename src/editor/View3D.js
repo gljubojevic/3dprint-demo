@@ -270,9 +270,9 @@ class View3D extends Component {
 		this.loadedObject = glTF.scene;
 
 		// find optional elements
-		let grpOpt = this.findOptional();
+		let opt = this.findOptional();
 		// preselect optional elements
-		this.defaultOptional(grpOpt);
+		this.showDefaultOptional(opt);
 
 		const omat = new THREE.MeshPhongMaterial( { color: 0x226622, flatShading: true } )
 		// enable shadow and set material, must have directional light, calc bounding box
@@ -311,7 +311,8 @@ class View3D extends Component {
 		
 		// Call changed list of models
 		if (null !== this.props.availableElements) {
-			this.props.availableElements(grpOpt);
+			//console.log(opt)
+			this.props.availableElements(opt);
 		}
 
 		// clear all previous animations
@@ -335,7 +336,7 @@ class View3D extends Component {
 
 	// animation is loaded
 	loaderAnimOk(glTF) {
-		console.log(glTF);
+		//console.log(glTF);
 		// init action
 		const anim = glTF.animations[0];
 
@@ -395,75 +396,59 @@ class View3D extends Component {
 	// finds optional objects, and hide them 
 	// only hides objects starting with name prefix "opt_"
 	findOptional() {
-		let elOpt=[];
-		this.loadedObject.traverse( function(obj) {
+		let el = {};
+		this.loadedObject.traverse((o) => {
 			// skip non optional objects
-			if (!obj.name.startsWith("opt_")) {
+			if (!o.name.startsWith("opt_")) {
 				return;
 			}
 			// hide optional objects
-			obj.visible = false;
+			o.visible = false;
+			// name path is opt_[category]_[item]
+			let namePath = o.name.split('_');
+			let category = namePath[1];
+			if (undefined === el[category]) {
+				el[category] = {
+					name: category,
+					items: []
+				}
+			}
 			// add to list for hide/show
-			elOpt.push({
-				name: obj.name,
-				visible: false
+			el[category].items.push({
+				key: o.name,
+				name: namePath[1] + ' ' + namePath[2],
+				visible: false,
+				thumbnail: null
 			});
 		});
-
-		return this.groupOptional(elOpt);
-	}
-
-	// Groups all optional elements for selection UI
-	groupOptional(elOpt) {
-		let grpOpt = [];
-		if (0 === elOpt.length) {
-			return grpOpt;
-		}
-		// sort before grouping
-		elOpt.sort((a,b) => {
-			if (a.name < b.name) { return -1; }
-			if (a.name > b.name) { return 1; }
+		// sort categories
+		let ent = Object.entries(el).sort((a,b) => {
+			if (a[0] < b[0]) { return -1; }
+			if (a[0] > b[0]) { return 1; }
 			return 0;
 		});
-
-		let grp = [];
-		let elCur = elOpt[0];
-		let elPrev = elCur;
-		grp.push(elCur);
-
-		for (let i = 1; i < elOpt.length; i++) {
-			elCur = elOpt[i];
-
-			// split names to get category info
-			// 2nd is category if matches it is same category
-			let prevNameParts = elPrev.name.split('_');
-			let curNameParts = elCur.name.split('_');
-
-			// check for different category
-			if (prevNameParts[1] !== curNameParts[1]) {
-				grpOpt.push(grp);
-				grp = [];
-			}
-
-			grp.push(elCur);
-			elPrev = elCur;
-		}
-
-		grpOpt.push(grp);
-		return grpOpt;
+		// sort items in category
+		ent.forEach((e) => {
+			e[1].items = e[1].items.sort((a,b) => {
+				if (a.name < b.name) { return -1; }
+				if (a.name > b.name) { return 1; }
+				return 0;
+			});
+		})
+		return ent;
 	}
 
 	// makes default selection
-	defaultOptional(grpOpt) {
-		for (let i = 0; i < grpOpt.length; i++) {
+	showDefaultOptional(opt) {
+		opt.forEach((o) => {
 			// skip preselect when only one optional element in group
-			if (1 === grpOpt[i].length) {
-				continue;
+			if (1 === o[1].items.length) {
+				return;
 			}
 			// preselect first in group
-			grpOpt[i][0].visible = true;
-			this.toggleElement(grpOpt[i][0]);
-		}
+			o[1].items[0].visible = true;
+			this.toggleElement(o[1].items[0]);
+		})
 	}
 
 	// toggle visible element, check for traversing scene..
@@ -471,7 +456,7 @@ class View3D extends Component {
 	toggleElement(el) {
 		console.log("Toggle visible", el);
 		this.loadedObject.traverse( function(obj) {
-			if (obj.name === el.name) {
+			if (obj.name === el.key) {
 				obj.visible = el.visible;
 			}
 		});

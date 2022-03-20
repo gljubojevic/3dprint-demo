@@ -17,10 +17,8 @@ class OptSelector extends Component {
 
 	renderCheckboxes(opts) {
 		return opts.map((o, idx) => {
-			let path = o.name.split('_');
-			let name = path[1] + ' ' + path[2];
 			return (
-				<FormControlLabel key={idx} label={name} value={o.name} control={<Checkbox checked={o.visible} onChange={this.checkChange}  />} />
+				<FormControlLabel key={idx} label={o.name} value={o.key} control={<Checkbox checked={o.visible} onChange={this.checkChange}  />} />
 			);
 		});
 	}
@@ -30,14 +28,14 @@ class OptSelector extends Component {
 		const v = e.currentTarget.checked;
 		//console.log(n, "check change ->", v);
 		if (null !==  this.props.toggleElement) {
-			this.props.toggleElement({name:n, visible:v});
+			this.props.toggleElement({key:n, visible:v});
 		}
 	}
 
 	radioChange(e) {
 		//console.log("radio change ->", e.target.value);
 		if (null !==  this.props.toggleElement) {
-			this.props.toggleElement({name:e.target.value, visible:true});
+			this.props.toggleElement({key:e.target.value, visible:true});
 		}
 	}
 
@@ -45,7 +43,7 @@ class OptSelector extends Component {
 		let val = '';
 		for (let i = 0; i < opts.length; i++) {
 			if (opts[i].visible) {
-				val = opts[i].name;
+				val = opts[i].key;
 			}
 		}
 
@@ -62,23 +60,21 @@ class OptSelector extends Component {
 
 	renderRadios(opts) {
 		return opts.map((o, idx) => {
-			let path = o.name.split('_');
-			let name = path[1] + ' ' + path[2];
 			return (
-				<FormControlLabel key={idx} label={name} value={o.name} control={<Radio />} />
+				<FormControlLabel key={idx} label={o.name} value={o.key} control={<Radio />} />
 			);
 		});
 	}
 
 	render() {
-		return this.props.optElements.map((opts, idx) => {
+		return this.props.elementGroups.map((opts, idx) => {
 			const key = "opt_" + idx;
-			const label = opts[0].name.split('_')[1];
+			const label = opts[0];
 			return (
 				<Paper sx={{p: 1, m: 1, opacity: 0.8 }} key={key}>
 					<FormControl>
 						<FormLabel component="legend">{label}</FormLabel>
-						{(1 === opts.length) ? this.renderCheckboxes(opts) : this.renderRadioSelect(opts)}
+						{(1 === opts[1].items.length) ? this.renderCheckboxes(opts[1].items) : this.renderRadioSelect(opts[1].items)}
 					</FormControl>
 				</Paper>
 			);
@@ -87,12 +83,12 @@ class OptSelector extends Component {
 }
 
 OptSelector.defaultProps = {
-	optElements: [],
+	elementGroups: [],
 	toggleElement: null
 }
 
 OptSelector.propTypes = {
-	optElements: PropTypes.array,
+	elementGroups: PropTypes.array,
 	toggleElement: PropTypes.func
 }
 
