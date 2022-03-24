@@ -25,6 +25,14 @@ class View3D extends Component {
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.animations = [];
 
+		// glTF decompressor, with path for decompression lib loading
+		const dracoLoader = new DRACOLoader()
+		dracoLoader.setDecoderPath(props.loadPath + '/libs/draco/')
+		//dracoLoader.setDecoderConfig({type: 'js'});	// (Optional) Override detection of WASM support.
+		// init object loader with decompressor
+		this.loader = new GLTFLoader();
+		this.loader.setDRACOLoader(dracoLoader)
+
 		// Init exporters
 		this.exporterSTL = new STLExporter();
 		this.exporterOBJ = new OBJExporter();
@@ -35,12 +43,26 @@ class View3D extends Component {
 		this.animTime = 0;
 
 		// Init default scene
-		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.Color( 0xafafaf );
-		//this.scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
+		this.scene = this.createScene(this.props.showGroundPlane, this.props.showLight);
+	}
+
+	// just empty div to add renderer
+	render() {
+		// this is to make container below toolbar
+		// theme access is possible through function generating sx
+		return (
+			<Box ref={this.refRenderer} sx={{paddingTop: (theme) => theme.mixins.toolbar.minHeight + 'px'}} />
+		);
+	}
+
+	// create default scene
+	createScene(showGroundPlane, showLight) {
+		const scene = new THREE.Scene();
+		scene.background = new THREE.Color( 0xafafaf );
+		//scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
 
 		// ground plane
-		if (this.props.showGroundPlane) {
+		if (showGroundPlane) {
 			const gp = new THREE.Mesh(
 				new THREE.PlaneGeometry(2, 2),
 				new THREE.MeshPhongMaterial( { color: 0x888888, depthWrite: false } ) 
@@ -48,13 +70,18 @@ class View3D extends Component {
 			gp.rotation.x = - Math.PI / 2;
 			gp.receiveShadow = true;
 			gp.name = "hlp_ground_plane";
-			this.scene.add(gp);
+			scene.add(gp);
 		}
 
-		// Ligts from example
-		const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-		hemiLight.position.set( 0, 20, 0 );
-		this.scene.add( hemiLight );
+		// Lights from example
+		const hL = new THREE.HemisphereLight(0xffffff, 0x444444);
+		hL.position.set(0, 5, 0);
+		scene.add(hL);
+		if (showLight) {
+			const h = new THREE.HemisphereLightHelper(hL, 1, 0xff0000);
+			h.name = "hlp_hL";
+			scene.add(h);
+		}
 
 		//const dirLight = new THREE.DirectionalLight( 0xffffff );
 		//dirLight.position.set( - 3, 10, - 10 );
@@ -65,40 +92,27 @@ class View3D extends Component {
 		//dirLight.shadow.camera.right = 2;
 		//dirLight.shadow.camera.near = 0.1;
 		//dirLight.shadow.camera.far = 40;
-		//this.scene.add( dirLight );
+		//scene.add( dirLight );
 		
-		this.dirLight1 = new THREE.DirectionalLight( 0xffffff );
-		this.dirLight1.position.set( 2, 2, 2 );
-		this.scene.add( this.dirLight1 );
+		const dL1 = new THREE.DirectionalLight(0xffffff);
+		dL1.position.set(2, 2, 2);
+		scene.add(dL1);
+		if (showLight) {
+			const h = new THREE.DirectionalLightHelper(dL1, 1, 0xff0000);
+			h.name = "hlp_dL1";
+			scene.add(h);
+		}
 
-		this.dirLight2 = new THREE.DirectionalLight( 0xffffff );
-		this.dirLight2.position.set( -2, -2, -2 );
-		this.scene.add( this.dirLight2 );
+		const dL2 = new THREE.DirectionalLight(0xffffff);
+		dL2.position.set(-2, -2, -2 );
+		scene.add(dL2);
+		if (showLight) {
+			const h = new THREE.DirectionalLightHelper(dL2, 1, 0xff0000);
+			h.name = "hlp_dL2";
+			scene.add(h);
+		}
 
-		//this.ambientLight = new THREE.AmbientLight( 0x222222 );
-		//this.scene.add( this.ambientLight );
-
-		// glTF decompressor, with path for decompression lib loading
-		const dracoLoader = new DRACOLoader()
-		dracoLoader.setDecoderPath(props.loadPath + '/libs/draco/')
-		//dracoLoader.setDecoderConfig({type: 'js'});	// (Optional) Override detection of WASM support.
-		// init object loader with decompressor
-		this.loader = new GLTFLoader();
-		this.loader.setDRACOLoader(dracoLoader)
-	}
-
-	// just empty div to add renderer
-	render() {
-		// this is to make container below toolbar
-		// theme access is possible through function generating sx
-		return (
-			<Box
-				ref={this.refRenderer} 
-				sx={{
-					paddingTop: (theme) => theme.mixins.toolbar.minHeight + 'px'
-				}} 
-			/>
-		);
+		return scene;
 	}
 
 	// extract scene and save object
@@ -135,29 +149,33 @@ class View3D extends Component {
 	// init three.js renderer
 	componentDidMount() {
 		// renderer element
-		const rsize = this.rendererDimensions();
+		const rSize = this.rendererDimensions();
 
-		// setup camera
-		this.camera = new THREE.PerspectiveCamera( 75, rsize.width / rsize.height, 0.1, 100 );
-		this.camera.position.y = 0.20;
-		this.camera.position.z = 0.10;
-
+		// Main renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
-		//this.renderer.setPixelRatio( window.devicePixelRatio );	// doubles pixels?!?
-		this.renderer.setSize(rsize.width, rsize.height);
+		this.renderer.setPixelRatio( window.devicePixelRatio );	// doubles pixels?!?
+		this.renderer.setSize(rSize.width, rSize.height);
 		//this.renderer.shadowMap.enabled = true;
 		// use ref as a mount point of the Three.js scene instead of the document.body
 		this.refRenderer.current.appendChild( this.renderer.domElement );
 		// Add handler for resizing
 		window.addEventListener( 'resize', this.onWindowResize );
 
-		// controls
+		// Thumbnail renderer
+		this.rendererTmb = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.rendererTmb.setSize(this.props.thumbnailWidth, this.props.thumbnailHeight);
+
+		// setup camera
+		this.camera = new THREE.PerspectiveCamera( 75, rSize.width / rSize.height, 0.1, 100 );
+		this.camera.position.set(0, 0.2, 0.1);
+
+		// camera controls
 		this.controls = new OrbitControls( this.camera, this.renderer.domElement );
 		this.controls.listenToKeyEvents( window ); // optional
 		this.controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
 		this.controls.dampingFactor = 0.05;
 		this.controls.screenSpacePanning = false;
-		this.controls.minDistance = 0.22;
+		this.controls.minDistance = 0.1;
 		this.controls.maxDistance = 2;
 		this.controls.maxPolarAngle = Math.PI / 2;
 		this.controls.target = new THREE.Vector3(0, 0.15, 0);
@@ -166,17 +184,10 @@ class View3D extends Component {
 		// start animation
 		this.animate();
 
-		// can we load
-		if (null === this.props.loadPath) {
-			return;
-		}
 		// kickstart loading
 		if (this.props.backgroundCube.length > 0) {
 			this.scene.background = this.loadBackgroundCube(this.props.backgroundCube);
 		}
-
-		//const reflectionCube = this.loadBackgroundCube(this.props.backgroundCube);
-		//this.cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: reflectionCube } );
 
 		this.loadObject(this.props.object3D);
 	}
@@ -196,16 +207,16 @@ class View3D extends Component {
 		let rst = getComputedStyle(this.refRenderer.current);
 		d.width -= parseFloat(rst.paddingLeft) + parseFloat(rst.paddingRight);
 		d.height -= parseFloat(rst.paddingTop) + parseFloat(rst.paddingBottom);
-		//console.log(d);
 		return d;
 	}
 
 	// TODO: fix resizing 
 	onWindowResize() {
-		const rsize = this.rendererDimensions();
-		this.camera.aspect = rsize.width / rsize.height;
+		const rSize = this.rendererDimensions();
+		this.camera.aspect = rSize.width / rSize.height;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize( rsize.width, rsize.height );
+		this.controls.update();
+		this.renderer.setSize( rSize.width, rSize.height );
 	}
 
 
@@ -265,25 +276,27 @@ class View3D extends Component {
 
 	// called when object is loaded
 	loaderOk(glTF) {
-		console.log("Object loaded");
 		//console.log(glTF);
-		this.loadedObject = glTF.scene;
+		// Pick only first object in scene
+		//this.loadedObject = glTF.scene;
+		this.loadedObject = glTF.scene.children[0];
 
 		// find optional elements
 		let opt = this.findOptional();
-		// preselect optional elements
-		this.showDefaultOptional(opt);
 
 		const omat = new THREE.MeshPhongMaterial( { color: 0x226622, flatShading: true } )
 		// enable shadow and set material, must have directional light, calc bounding box
 		let bb = new THREE.Box3();
-		this.loadedObject.traverse( function(object) {
-			if ( !object.isMesh ) { return; }
-			//object.castShadow = true;
-			object.material = omat;
-			// calc bounding box
-			bb.expandByObject(object);
+		this.loadedObject.traverse((o) => {
+			// disable hiding object that are not fully in in frustum
+			o.frustumCulled = false;
+			if ( !o.isMesh ) { return; }
+			//o.castShadow = true;
+			o.material = omat;
+			bb.expandByObject(o);	// calc bounding box
 		});
+		// object to scene
+		this.scene.add(this.loadedObject);
 
 		// display bounding box
 		if (this.props.showBoundingBox) {
@@ -303,8 +316,13 @@ class View3D extends Component {
 		// adjust camera to object loaded
 		this.cameraToBBox(bb, this.camera, this.controls, 1.0);
 
-		// set scene for display
-		this.scene.add(this.loadedObject);
+		// create thumbnails
+		// WARN: Can' do it with cloned scene, all geometry is trashed!!!!
+		// Working here with default scene
+		this.createElementThumbs(opt, this.props.thumbnailWidth / this.props.thumbnailHeight);
+
+		// preselect default optional elements
+		this.showDefaultOptional(opt);
 
 		// create mixer for animations
 		this.animMixer = new THREE.AnimationMixer(this.loadedObject);
@@ -319,7 +337,6 @@ class View3D extends Component {
 		this.animations = [];
 		// call animation loading
 		for (let i = 0; i < this.props.animPoses.length; i++) {
-			//console.log("Loading anim", this.props.animPoses[i]);
 			this.loadAnimation(this.props.animPoses[i]);
 		}
 	}
@@ -337,7 +354,7 @@ class View3D extends Component {
 	// animation is loaded
 	loaderAnimOk(glTF) {
 		//console.log(glTF);
-		// init action
+		// only first animation
 		const anim = glTF.animations[0];
 
 		// find max frame count and frame time
@@ -355,6 +372,7 @@ class View3D extends Component {
 			anim.tracks = anim.tracks.filter(t => t.name !== "mixamorigHips.position")
 		}
 
+		// create disabled action
 		const act = this.animMixer.clipAction(anim);
 		act.enabled = false;
 		act.play();
@@ -393,8 +411,7 @@ class View3D extends Component {
 		}
 	}
 
-	// finds optional objects, and hide them 
-	// only hides objects starting with name prefix "opt_"
+	// finds optional objects name starting with prefix "opt_"
 	findOptional() {
 		let el = {};
 		this.loadedObject.traverse((o) => {
@@ -402,8 +419,6 @@ class View3D extends Component {
 			if (!o.name.startsWith("opt_")) {
 				return;
 			}
-			// hide optional objects
-			o.visible = false;
 			// name path is opt_[category]_[item]
 			let namePath = o.name.split('_');
 			let category = namePath[1];
@@ -440,6 +455,12 @@ class View3D extends Component {
 
 	// makes default selection
 	showDefaultOptional(opt) {
+		// show all meshes in object except optional
+		this.loadedObject.traverse((o) => {
+			if (o.isMesh && !o.name.startsWith("opt_")) { o.visible = true; }
+		});
+
+		// make default selection
 		opt.forEach((o) => {
 			// skip preselect when only one optional element in group
 			if (1 === o[1].items.length) {
@@ -454,7 +475,7 @@ class View3D extends Component {
 	// toggle visible element, check for traversing scene..
 	// https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/STLExporter.js
 	toggleElement(el) {
-		console.log("Toggle visible", el);
+		//console.log("Toggle visible", el);
 		this.loadedObject.traverse( function(obj) {
 			if (obj.name === el.key) {
 				obj.visible = el.visible;
@@ -463,7 +484,7 @@ class View3D extends Component {
 	}
 
 	toggleAnimation(name) {
-		console.log("Toggle animation", name);
+		//console.log("Toggle animation", name);
 		for (let i = 0; i < this.animations.length; i++) {
 			this.animations[i].action.enabled = this.animations[i].name === name;
 		}
@@ -476,32 +497,82 @@ class View3D extends Component {
 	}
 
 	// point camera and controls to bounding box
+	// see: https://discourse.threejs.org/t/camera-zoom-to-fit-object/936/6?page=2
 	cameraToBBox(box, camera, controls, fitOffset = 1.2) {
 		const size = new THREE.Vector3();
 		const center = new THREE.Vector3();
 		box.getSize(size);
-		box.getCenter(center );
+		box.getCenter(center);
 
 		const maxSize = Math.max(size.x, size.y, size.z);
 		const fitHeightDistance = maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
 		const fitWidthDistance = fitHeightDistance / camera.aspect;
 		const distance = fitOffset * Math.max(fitHeightDistance, fitWidthDistance);
 
-		const direction = controls.target.clone()
-			.sub(camera.position)
-			.normalize()
-			.multiplyScalar(distance);
-
-		controls.maxDistance = distance * 10;
-		controls.target.copy(center);
-
 		camera.near = distance / 100;
 		camera.far = distance * 100;
 		camera.updateProjectionMatrix();
 
-		camera.position.copy(controls.target).sub(direction);
+		if (null !== controls) {
+			const direction = controls.target.clone()
+				.sub(camera.position)
+				.normalize()
+				.multiplyScalar(distance);
+			
+			controls.maxDistance = distance * 50;
+			controls.target.copy(center);
 
-		controls.update();
+			camera.position.copy(controls.target).sub(direction);
+
+			controls.update();
+		} else {
+			const direction = center.clone()
+				.sub(camera.position)
+				.normalize()
+				.multiplyScalar(distance);
+
+			camera.position.copy(center).sub(direction);
+			camera.lookAt(center);
+		}
+	}
+
+	// create thumbnail pictures for each optional element
+	createElementThumbs(elGroups, cameraAspect) {
+		// setup thumbnail camera
+		const camera = new THREE.PerspectiveCamera(75, cameraAspect, 0.1, 100);
+		camera.position.y = 0.20;
+		camera.position.z = 20.0;
+
+		// hide all meshes in object
+		this.loadedObject.traverse((o) => {
+			if (o.isMesh) { o.visible = false; }
+		});
+
+		// create thumbnails
+		elGroups.forEach((group) => {
+			group[1].items.forEach((el) => {
+
+				// find object to render
+				let objRender = null;
+				this.loadedObject.traverse((o) => {
+					if (o.name === el.key) { objRender = o; }
+				});
+
+				let bb = new THREE.Box3();
+				bb.expandByObject(objRender);	// calc bounding box
+
+				// position camera to thumbnail
+				this.cameraToBBox(bb, camera, null, 1.2);
+
+				// render
+				objRender.visible = true;		// make it visible
+				//this.rendererTmb.clear();
+				this.rendererTmb.render(this.scene, camera);
+				el.thumbnail = this.rendererTmb.domElement.toDataURL();
+				objRender.visible = false;		// hide it again
+
+			});
+		});
 	}
 }
 
@@ -512,11 +583,14 @@ View3D.defaultProps = {
 	showBoundingBox: false,
 	showSkeleton: false,
 	showGroundPlane: true,
+	showLight: false,
 	backgroundCube: null,
 	availableElements: null,
 	availableAnimations: null,
 	animSingleStep: true,
-	animDisableMove: true
+	animDisableMove: true,
+	thumbnailWidth: 256,
+	thumbnailHeight: 256
 }
 
 View3D.propTypes = {
@@ -526,11 +600,14 @@ View3D.propTypes = {
 	showBoundingBox: PropTypes.bool,
 	showSkeleton: PropTypes.bool,
 	showGroundPlane: PropTypes.bool,
+	showLight: PropTypes.bool,
 	backgroundCube: PropTypes.array,
 	availableElements: PropTypes.func,
 	availableAnimations: PropTypes.func,
 	animSingleStep: PropTypes.bool,
-	animDisableMove: PropTypes.bool
+	animDisableMove: PropTypes.bool,
+	thumbnailWidth: PropTypes.number,
+	thumbnailHeight: PropTypes.number
 }
 
 export default View3D;
