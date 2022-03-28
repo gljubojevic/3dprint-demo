@@ -429,10 +429,25 @@ class View3D extends Component {
 					items: []
 				}
 			}
+			//console.log(o.name, o.userData);
+
+			// set title from userData if present
+			let oTitle = namePath[1] + ' ' + namePath[2];
+			if (o.userData && o.userData.Title && o.userData.Title.length > 0) {
+				oTitle = o.userData.Title;
+			}
+
+			// set description from userData if present
+			let oDescription = '';
+			if (o.userData && o.userData.Description && o.userData.Description.length > 0) {
+				oDescription = o.userData.Description;
+			}
+
 			// add to list for hide/show
 			el[category].items.push({
 				key: o.name,
-				name: namePath[1] + ' ' + namePath[2],
+				name: oTitle,
+				description: oDescription,
 				visible: false,
 				thumbnail: null
 			});

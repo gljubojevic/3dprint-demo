@@ -47,10 +47,11 @@ class CategorySelector extends Component {
 	renderCheckboxes(items) {
 		return items.map((i, idx) => {
 			return (
-				<React.Fragment key={idx}>
+				<div key={idx}>
 					<FormControlLabel label={i.name} value={i.key} control={<Checkbox checked={i.visible} onChange={this.checkChange} />} />
+					<p style={{margin:0, padding:0}}>{i.description}</p>
 					<img src={i.thumbnail} alt={i.name} />
-				</React.Fragment>
+				</div>
 			);
 		});
 	}
@@ -58,10 +59,11 @@ class CategorySelector extends Component {
 	renderRadios(items) {
 		return items.map((i, idx) => {
 			return (
-				<React.Fragment key={idx}>
+				<div key={idx}>
 					<FormControlLabel label={i.name} value={i.key} control={<Radio />} />
+					<p style={{margin:0, padding:0}}>{i.description}</p>
 					<img src={i.thumbnail} alt={i.name} />
-				</React.Fragment>
+				</div>
 			);
 		});
 	}

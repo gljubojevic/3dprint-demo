@@ -138,7 +138,7 @@ class App extends Component {
 				<AppTools toggleDrawer={this.toggleDrawer} />
 				<DrawerMenu ref={this.refDrawerMenu} save={this.save} />
 				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
-					object3D="/objects/rhodesia-solider.glb"
+					object3D="/objects/rhodesia-solider-01.glb"
 					backgroundCube={bgCube}
 					animPoses={animPoses}
 					availableElements={this.availableElements}
