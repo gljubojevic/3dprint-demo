@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import AppTools from './ui/AppTools';
 import DrawerMenu from './ui/DrawerMenu';
 import MainSelector from './ui/MainSelector';
+import CategorySelector from './ui/CategorySelector';
 import View3D from './editor/View3D';
 import { saveAs } from 'file-saver';
 
@@ -9,6 +10,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			elementCategory: '',
 			elementGroups: [],
 			animations: []
 		}
@@ -21,6 +23,7 @@ class App extends Component {
 		this.availableAnimations = this.availableAnimations.bind(this);
 		this.toggleAnimation = this.toggleAnimation.bind(this);
 		this.setAnimationTime = this.setAnimationTime.bind(this);
+		this.selectElementCategory = this.selectElementCategory.bind(this);
 	}
 
 	toggleDrawer(e) {
@@ -49,6 +52,10 @@ class App extends Component {
 	// Set list of grouped elements to hide and show
 	availableElements(groups) {
 		this.setState({elementGroups:groups});
+	}
+
+	selectElementCategory(category) {
+		this.setState({elementCategory:category});
 	}
 
 	toggleElement(el) {
@@ -135,13 +142,21 @@ class App extends Component {
 					backgroundCube={bgCube}
 					animPoses={animPoses}
 					availableElements={this.availableElements}
-					availableAnimations={this.availableAnimations} />
+					availableAnimations={this.availableAnimations}
+					thumbnailWidth={128}
+					thumbnailHeight={128} />
 				<MainSelector 
 					elementGroups={this.state.elementGroups}
 					toggleElement={this.toggleElement}
 					optAnimations={this.state.animations}
 					toggleAnimation={this.toggleAnimation}
-					setAnimationTime={this.setAnimationTime} />
+					setAnimationTime={this.setAnimationTime}
+					elementCategory={this.state.elementCategory}
+					selectElementCategory={this.selectElementCategory} />
+				<CategorySelector
+					elementCategory={this.state.elementCategory}
+					elementGroups={this.state.elementGroups}
+					toggleElement={this.toggleElement} />
 			</React.Fragment>
 		);
 	}

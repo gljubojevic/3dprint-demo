@@ -287,6 +287,7 @@ class View3D extends Component {
 		const omat = new THREE.MeshPhongMaterial( { color: 0x226622, flatShading: true } )
 		// enable shadow and set material, must have directional light, calc bounding box
 		let bb = new THREE.Box3();
+		//this.loadedObject.frustumCulled = false;
 		this.loadedObject.traverse((o) => {
 			// disable hiding object that are not fully in in frustum
 			o.frustumCulled = false;
@@ -519,19 +520,25 @@ class View3D extends Component {
 				.normalize()
 				.multiplyScalar(distance);
 			
-			controls.maxDistance = distance * 50;
+			controls.maxDistance = distance * 20;
 			controls.target.copy(center);
 
 			camera.position.copy(controls.target).sub(direction);
 
 			controls.update();
 		} else {
-			const direction = center.clone()
-				.sub(camera.position)
-				.normalize()
-				.multiplyScalar(distance);
+			//const direction = center.clone()
+			//	.sub(camera.position)
+			//	.normalize()
+			//	.multiplyScalar(distance);
+			//camera.position.copy(center).sub(direction);
+			//camera.lookAt(center);
+			
+			const move = new THREE.Vector3(0,0,distance);
+			const pos = center.clone()
+				.add(move);
 
-			camera.position.copy(center).sub(direction);
+			camera.position.set(pos.x, pos.y, pos.z);
 			camera.lookAt(center);
 		}
 	}
@@ -539,39 +546,66 @@ class View3D extends Component {
 	// create thumbnail pictures for each optional element
 	createElementThumbs(elGroups, cameraAspect) {
 		// setup thumbnail camera
-		const camera = new THREE.PerspectiveCamera(75, cameraAspect, 0.1, 100);
-		camera.position.y = 0.20;
-		camera.position.z = 20.0;
+		const cam = new THREE.PerspectiveCamera(75, cameraAspect, 0.1, 100);
+		cam.position.set(0, 0.20, 20.0);
 
 		// hide all meshes in object
 		this.loadedObject.traverse((o) => {
 			if (o.isMesh) { o.visible = false; }
 		});
 
+		// hide scene helper objects
+		this.scene.traverse((o) => {
+			if (o.name.startsWith('hlp_')) { o.visible = false; }
+		});
+
+		// save scene background
+		const sceneBG = this.scene.background;
+		this.scene.background = null;
+
+		//const tmb_render = 'opt_head_01';
+
 		// create thumbnails
 		elGroups.forEach((group) => {
 			group[1].items.forEach((el) => {
+				//if (!el.key.startsWith(tmb_render)) { return; }
 
 				// find object to render
 				let objRender = null;
+				const bb = new THREE.Box3();
 				this.loadedObject.traverse((o) => {
 					if (o.name === el.key) { objRender = o; }
 				});
 
-				let bb = new THREE.Box3();
-				bb.expandByObject(objRender);	// calc bounding box
+				// calc bounding box, NOT WORKING
+				//bb.expandByObject(objRender);
+				// take copy of mesh bounding box
+				bb.copy(objRender.geometry.boundingBox);
 
+				//const box = new THREE.Box3Helper(bb, 0xff0000)
+				//box.name = "hlp_bb_" + el.key;
+				//this.scene.add( box );
+		
 				// position camera to thumbnail
-				this.cameraToBBox(bb, camera, null, 1.2);
+				this.cameraToBBox(bb, cam, null, 1.2);
+
+				//const camHelper = new THREE.CameraHelper(cam);
+				//this.scene.add( camHelper );
 
 				// render
 				objRender.visible = true;		// make it visible
 				//this.rendererTmb.clear();
-				this.rendererTmb.render(this.scene, camera);
+				this.rendererTmb.render(this.scene, cam);
 				el.thumbnail = this.rendererTmb.domElement.toDataURL();
 				objRender.visible = false;		// hide it again
-
 			});
+		});
+
+		// restore scene background
+		this.scene.background = sceneBG;
+		// restore scene helper objects
+		this.scene.traverse((o) => {
+			if (o.name.startsWith('hlp_')) { o.visible = true; }
 		});
 	}
 }
