@@ -41,7 +41,7 @@ class AnimSelector extends Component {
 	renderAnimFrames(opts) {
 		// find selected anim
 		const o = this.findSelected(opts);
-		if (0 === o.frames) {
+		if (null === o || 0 === o.frames) {
 			return null;
 		}
 

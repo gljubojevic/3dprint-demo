@@ -16,6 +16,7 @@ class View3D extends Component {
 		// methods
 		this.save = this.save.bind(this);
 		this.animate = this.animate.bind(this);
+		this.loadObjectDirect = this.loadObjectDirect.bind(this);
 		this.loaderOk = this.loaderOk.bind(this);
 		this.loaderAnimOk = this.loaderAnimOk.bind(this);
 		this.loaderError = this.loaderError.bind(this);
@@ -25,14 +26,7 @@ class View3D extends Component {
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.animations = [];
 
-		// glTF decompressor, with path for decompression lib loading
-		const dracoLoader = new DRACOLoader()
-		dracoLoader.setDecoderPath(props.loadPath + '/libs/draco/')
-		//dracoLoader.setDecoderConfig({type: 'js'});	// (Optional) Override detection of WASM support.
-		// init object loader with decompressor
-		this.loader = new GLTFLoader();
-		this.loader.setDRACOLoader(dracoLoader)
-
+		this.loader = this.initLoader(props.loadPath);
 		// Init exporters
 		this.exporterSTL = new STLExporter();
 		this.exporterOBJ = new OBJExporter();
@@ -219,6 +213,16 @@ class View3D extends Component {
 		this.renderer.setSize( rSize.width, rSize.height );
 	}
 
+	initLoader(loadPath) {
+		// glTF decompressor, with path for decompression lib loading
+		const dracoLoader = new DRACOLoader()
+		dracoLoader.setDecoderPath(loadPath + '/libs/draco/')
+		//dracoLoader.setDecoderConfig({type: 'js'});	// (Optional) Override detection of WASM support.
+		// init object loader with decompressor
+		const loader = new GLTFLoader();
+		loader.setDRACOLoader(dracoLoader);
+		return loader;
+	}
 
 	loadObject(filePath){
 		if (null === filePath) {
@@ -232,6 +236,33 @@ class View3D extends Component {
 		);
 	}
 
+	loadObjectDirect(file) {
+		//console.log("Loading direct", file);
+
+		// reset scene for new loading object
+		// stupid but effective
+		if (this.loadedObject) {
+			this.scene = this.createScene(this.props.showGroundPlane, this.props.showLight);
+			// reset list of models
+			if (null !== this.props.availableElements) {
+				this.props.availableElements([]);
+			}
+			// reset list of animations
+			if (null !== this.props.availableAnimations) {
+				this.props.availableAnimations([]);
+			}
+		}
+
+		// Load
+		const rdr = new FileReader();
+		rdr.addEventListener('load', e => {
+			this.loader.parse(e.target.result, '', this.loaderOk);
+		});
+		rdr.addEventListener('error', e => { 
+			console.error("Error loading", file.name, e);
+		});
+		rdr.readAsArrayBuffer(file);
+	}
 
 	loadAnimation(filePath) {
 		if (null === filePath) {

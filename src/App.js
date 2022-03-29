@@ -3,7 +3,9 @@ import AppTools from './ui/AppTools';
 import DrawerMenu from './ui/DrawerMenu';
 import MainSelector from './ui/MainSelector';
 import CategorySelector from './ui/CategorySelector';
+import Paper from '@mui/material/Paper';
 import View3D from './editor/View3D';
+import Typography from '@mui/material/Typography';
 import { saveAs } from 'file-saver';
 
 class App extends Component {
@@ -24,6 +26,8 @@ class App extends Component {
 		this.toggleAnimation = this.toggleAnimation.bind(this);
 		this.setAnimationTime = this.setAnimationTime.bind(this);
 		this.selectElementCategory = this.selectElementCategory.bind(this);
+		this.loadDragNDrop = this.loadDragNDrop.bind(this);
+		this.loadDragOver = this.loadDragOver.bind(this);
 	}
 
 	toggleDrawer(e) {
@@ -46,6 +50,39 @@ class App extends Component {
 			default:
 				console.log("Unsupported file format ->",fileFormat);
 				break;
+		}
+	}
+
+	// Prevent default behavior (Prevent file from being opened)
+	loadDragOver(e) {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+		//console.log('File(s) in drop zone');
+	}
+
+	loadDragNDrop(e) {
+		e.preventDefault();
+		console.log("Drag & Drop files");
+		if (e.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
+		if ( e.dataTransfer.items ) {
+			// Use DataTransferItemList interface to access the file(s)
+			for (let i = 0; i < e.dataTransfer.items.length; i++) {
+				// If dropped items aren't files, reject them
+				if (e.dataTransfer.items[i].kind === 'file') {
+					let file = e.dataTransfer.items[i].getAsFile();
+					//console.log('DataTransferItemList file[' + i + '].name = ' + file.name, file);
+					this.refView3D.current.loadObjectDirect(file);
+					// loading only one file
+					break;
+				}
+			}
+		} else {
+			// TODO: Use DataTransfer interface to access the file(s)
+			for (let i = 0; i < e.dataTransfer.files.length; i++) {
+				console.log('DataTransfer file[' + i + '].name = ' + e.dataTransfer.files[i].name);
+				//editor.loader.loadFiles( e.dataTransfer.files );
+				//this.refView3D.current.loadObject(e.dataTransfer.files[i]);
+			}
 		}
 	}
 
@@ -157,6 +194,17 @@ class App extends Component {
 					elementCategory={this.state.elementCategory}
 					elementGroups={this.state.elementGroups}
 					toggleElement={this.toggleElement} />
+				<Paper onDrop={this.loadDragNDrop} onDragOver={this.loadDragOver} sx={{
+					m: 1, p: 1,
+					bottom: 0, right: 0,
+					width: 1/5,
+					textAlign: 'center',
+					zIndex: 'appBar', 
+					position: 'absolute' }}>
+						<Typography variant="h6" component="p">
+						Drag & Drop<br/>test object here
+						</Typography>
+				</Paper>
 			</React.Fragment>
 		);
 	}
