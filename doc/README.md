@@ -27,8 +27,7 @@ All main parts for mesh name MUST have prefix `main_` e.g.
 
 ### Optional parts
 Optional parts parts are divided into categories that are displayed in UI for model customization.  
-![UI categories](img/UI_Categories.png)  
-<img src="img/UI_Categories.png" width="850">
+<img src="img/UI_Categories.png" width="425" />  
 Further there are two types of optional parts
 - single item from same category can be visible
 - multiple items from same category can be visible
@@ -53,6 +52,7 @@ Example naming meshes **where single is selectable** in category
 
 In category "head" it is possible to select either commander, solider or general but not all.  
 **NOTE:** when single item is selectable first option is always visible by default.
+<img src="img/UI_single_select.png" width="408" />  
 
 Example naming meshes **where multiple is selectable** in category
 - optm_accessories_belt
@@ -61,5 +61,7 @@ Example naming meshes **where multiple is selectable** in category
 
 In category "accessories" it is possible to all options belt, flask and bag.  
 **NOTE:** when multiple items are selectable none is visible by default.
+<img src="img/UI_multiple_select.png" width="408" />  
+
 
 ## glTF Export process
