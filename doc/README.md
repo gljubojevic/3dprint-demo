@@ -65,3 +65,36 @@ In category "accessories" it is possible to all options belt, flask and bag.
 
 
 ## glTF Export process
+Export process consists of few steps:
+- Start Blender with default scene, remove default object
+- Import Mixamo rigged FBX
+- Name correctly main and optional meshes
+- Export glTF file
+- Test your model
+
+Here are screenshots step by step of export process.
+
+### Blender with default scene and removed default object.
+![Blender empty scene](img/Blender_empty.png)  
+
+### Imported Mixamo FBX rigged model.  
+![Blender empty scene](img/Blender_imported.png)  
+
+### Correctly named main and optional parts.
+For each optional mesh add two custom string properties
+- `Title` used in UI for display name of mesh in model
+- `Description` used in UI for longer description display of mesh in model
+
+![Blender named meshes](img/Blender_name_meshes.png)  
+
+### Export glTF  
+These are correct settings for glTF export from blender.  
+**Binary glTF format is used, file extension "glb" to support compression and smaller file size.**  
+![Blender glTF export params 01](img/Blender_export01.png)  
+
+And animation params, because we need to have skinned model.  
+![Blender glTF export params 02](img/Blender_export01.png)  
+
+### Test model
+Test using drag&drop in [demo editor](https://gljubojevic.github.io/3dprint-demo).  
+![Blender glTF export params 02](img/demo_editor.png)  
