@@ -62,7 +62,7 @@ class App extends Component {
 
 	loadDragNDrop(e) {
 		e.preventDefault();
-		console.log("Drag & Drop files");
+		console.log("Drag & Drop files, items:", e.dataTransfer.items.length, "files:", e.dataTransfer.files.length);
 		if (e.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
 		if ( e.dataTransfer.items ) {
 			// Use DataTransferItemList interface to access the file(s)
@@ -77,11 +77,12 @@ class App extends Component {
 				}
 			}
 		} else {
-			// TODO: Use DataTransfer interface to access the file(s)
+			// Use DataTransfer interface to access the file(s)
 			for (let i = 0; i < e.dataTransfer.files.length; i++) {
-				console.log('DataTransfer file[' + i + '].name = ' + e.dataTransfer.files[i].name);
-				//editor.loader.loadFiles( e.dataTransfer.files );
-				//this.refView3D.current.loadObject(e.dataTransfer.files[i]);
+				//console.log('DataTransfer file[' + i + '].name = ' + e.dataTransfer.files[i].name, e.dataTransfer.files[i]);
+				this.refView3D.current.loadObjectDirect(e.dataTransfer.files[i]);
+				// loading only one file
+				break;
 			}
 		}
 	}
@@ -202,7 +203,7 @@ class App extends Component {
 					zIndex: 'appBar', 
 					position: 'absolute' }}>
 						<Typography variant="h6" component="p">
-						Drag & Drop<br/>test object here
+						Drag & Drop<br/>test model here
 						</Typography>
 				</Paper>
 			</React.Fragment>
