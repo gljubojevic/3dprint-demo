@@ -51,7 +51,7 @@ Example naming meshes **where single is selectable** in category
 - opts_head_general
 
 In category "head" it is possible to select either commander, solider or general but not all.  
-**NOTE:** when single item is selectable first option is always visible by default.
+**NOTE:** when single item is selectable first option is always visible by default.  
 <img src="img/UI_single_select.png" width="408" />  
 
 Example naming meshes **where multiple is selectable** in category
@@ -60,7 +60,7 @@ Example naming meshes **where multiple is selectable** in category
 - optm_accessories_bag
 
 In category "accessories" it is possible to all options belt, flask and bag.  
-**NOTE:** when multiple items are selectable none is visible by default.
+**NOTE:** when multiple items are selectable none is visible by default.  
 <img src="img/UI_multiple_select.png" width="408" />  
 
 
