@@ -448,15 +448,17 @@ class View3D extends Component {
 		let el = {};
 		this.loadedObject.traverse((o) => {
 			// skip non optional objects
-			if (!o.name.startsWith("opt_")) {
+			if (!(o.name.startsWith("opts_") || o.name.startsWith("optm_"))) {
 				return;
 			}
 			// name path is opt_[category]_[item]
 			let namePath = o.name.split('_');
 			let category = namePath[1];
 			if (undefined === el[category]) {
+				let singleSelect = 'opts' === namePath[0];
 				el[category] = {
 					name: category,
+					singleSelect: singleSelect,
 					items: []
 				}
 			}
@@ -504,7 +506,7 @@ class View3D extends Component {
 	showDefaultOptional(opt) {
 		// show all meshes in object except optional
 		this.loadedObject.traverse((o) => {
-			if (o.isMesh && !o.name.startsWith("opt_")) { o.visible = true; }
+			if (o.isMesh && !o.name.startsWith("opts_") && !o.name.startsWith("optm_")) { o.visible = true; }
 		});
 
 		// make default selection

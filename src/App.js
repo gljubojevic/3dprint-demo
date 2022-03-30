@@ -104,7 +104,7 @@ class App extends Component {
 				return groupDef
 			}
 			const group = groupDef[1];
-			const isRadio = group.items.length > 1;
+			//const isRadio = group.items.length > 1;
 			group.items = group.items.map((e) => {
 				// change state of element
 				if (e.key === el.key) {
@@ -112,7 +112,7 @@ class App extends Component {
 					this.refView3D.current.toggleElement(e);
 				} else {
 					// when is radio selection toggle invert previous selection
-					if (isRadio) {
+					if (group.singleSelect) {
 						e.visible = !el.visible;
 						this.refView3D.current.toggleElement(e);
 					}
@@ -176,7 +176,7 @@ class App extends Component {
 				<AppTools toggleDrawer={this.toggleDrawer} />
 				<DrawerMenu ref={this.refDrawerMenu} save={this.save} />
 				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
-					object3D="/objects/rhodesia-solider-01.glb"
+					object3D="/objects/rhodesia-solider-02.glb"
 					backgroundCube={bgCube}
 					animPoses={animPoses}
 					availableElements={this.availableElements}

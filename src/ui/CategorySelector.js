@@ -95,7 +95,7 @@ class CategorySelector extends Component {
 			<Paper sx={{p: 1, m: 1, opacity: 0.8 }}>
 				<FormLabel component="legend">{dispName}</FormLabel>
 				<FormControl>
-					{(1 === category.items.length) ? this.renderCheckboxes(category.items) : this.renderRadioSelect(category.name,category.items)}
+					{category.singleSelect ? this.renderRadioSelect(category.name,category.items) : this.renderCheckboxes(category.items)}
 				</FormControl>
 			</Paper>
 		);
