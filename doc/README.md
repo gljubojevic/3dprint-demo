@@ -27,7 +27,8 @@ All main parts for mesh name MUST have prefix `main_` e.g.
 
 ### Optional parts
 Optional parts parts are divided into categories that are displayed in UI for model customization.  
-![UI categories](./img/UI_Categories.png|width=850)  
+![UI categories](img/UI_Categories.png)  
+<img src="img/UI_Categories.png" width="850">
 Further there are two types of optional parts
 - single item from same category can be visible
 - multiple items from same category can be visible
