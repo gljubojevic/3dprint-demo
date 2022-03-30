@@ -97,4 +97,4 @@ And animation params, because we need to have skinned model.
 
 ### Test model
 Test using drag&drop in [demo editor](https://gljubojevic.github.io/3dprint-demo).  
-![Blender glTF export params 02](img/demo_editor.png)  
+![Blender demo editor](img/Demo_editor.png)  
