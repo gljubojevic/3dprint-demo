@@ -106,14 +106,16 @@ class MainSelector extends Component {
 						<ListItemText primary="CONFIGURE MODEL" />
 					</ListItemButton>
 				</ListItem>
-				<ListItem disablePadding>
-					<ListItemButton onClick={this.menuSelected} data-value="pose">
-						<ListItemIcon>
-							<AccessibilityNewIcon />
-						</ListItemIcon>
-						<ListItemText primary="SELECT POSE" />
-					</ListItemButton>
-				</ListItem>
+				{this.props.optAnimations.length > 0 &&
+					<ListItem disablePadding>
+						<ListItemButton onClick={this.menuSelected} data-value="pose">
+							<ListItemIcon>
+								<AccessibilityNewIcon />
+							</ListItemIcon>
+							<ListItemText primary="SELECT POSE" />
+						</ListItemButton>
+					</ListItem>
+				}
 			</React.Fragment>
 		);
 	}

@@ -172,11 +172,13 @@ class App extends Component {
 		];
 
 		return (
+			//object3D="/objects/rhodesia-solider-02.glb"
+			//object3D="/objects/Test_model2.glb"
 			<React.Fragment>
 				<AppTools toggleDrawer={this.toggleDrawer} />
 				<DrawerMenu ref={this.refDrawerMenu} save={this.save} />
 				<View3D ref={this.refView3D} loadPath={process.env.PUBLIC_URL} 
-					object3D="/objects/rhodesia-solider-02.glb"
+					object3D="/objects/Test_model2.glb"
 					backgroundCube={bgCube}
 					animPoses={animPoses}
 					availableElements={this.availableElements}

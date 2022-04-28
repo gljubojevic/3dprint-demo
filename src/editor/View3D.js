@@ -25,6 +25,7 @@ class View3D extends Component {
 		this.setAnimationTime = this.setAnimationTime.bind(this);
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.animations = [];
+		this.isSkinnedMesh = false;
 
 		this.loader = this.initLoader(props.loadPath);
 		// Init exporters
@@ -160,7 +161,7 @@ class View3D extends Component {
 		this.rendererTmb.setSize(this.props.thumbnailWidth, this.props.thumbnailHeight);
 
 		// setup camera
-		this.camera = new THREE.PerspectiveCamera( 75, rSize.width / rSize.height, 0.1, 100 );
+		this.camera = new THREE.PerspectiveCamera( 45, rSize.width / rSize.height, 0.1, 100 );
 		this.camera.position.set(0, 0.2, 0.1);
 
 		// camera controls
@@ -312,6 +313,13 @@ class View3D extends Component {
 		//this.loadedObject = glTF.scene;
 		this.loadedObject = glTF.scene.children[0];
 
+		// check skinned
+		this.isSkinnedMesh = false;
+		this.loadedObject.traverse((o) => {
+			if (this.isSkinnedMesh) { return; }
+			if (o.isSkinnedMesh) { this.isSkinnedMesh = true; }
+		});
+
 		// find optional elements
 		let opt = this.findOptional();
 
@@ -325,8 +333,16 @@ class View3D extends Component {
 			if ( !o.isMesh ) { return; }
 			//o.castShadow = true;
 			o.material = omat;
-			bb.expandByObject(o);	// calc bounding box
+			if (this.isSkinnedMesh) {
+				// NOTE: Working with skinned mesh
+				bb.expandByObject(o);	// calc bounding box
+			}
 		});
+		if (!this.isSkinnedMesh) {
+			// NOTE: Working with non skinned mesh
+			bb.expandByObject(this.loadedObject);	// calc bounding box
+		}
+
 		// object to scene
 		this.scene.add(this.loadedObject);
 
@@ -368,8 +384,10 @@ class View3D extends Component {
 		// clear all previous animations
 		this.animations = [];
 		// call animation loading
-		for (let i = 0; i < this.props.animPoses.length; i++) {
-			this.loadAnimation(this.props.animPoses[i]);
+		if (this.isSkinnedMesh) {
+			for (let i = 0; i < this.props.animPoses.length; i++) {
+				this.loadAnimation(this.props.animPoses[i]);
+			}
 		}
 	}
 
@@ -568,19 +586,21 @@ class View3D extends Component {
 				.normalize()
 				.multiplyScalar(distance);
 			
-			controls.maxDistance = distance * 20;
+			controls.maxDistance = distance * 2;
 			controls.target.copy(center);
 
 			camera.position.copy(controls.target).sub(direction);
 
 			controls.update();
 		} else {
-			//const direction = center.clone()
-			//	.sub(camera.position)
-			//	.normalize()
-			//	.multiplyScalar(distance);
-			//camera.position.copy(center).sub(direction);
-			//camera.lookAt(center);
+			/*
+			const direction = center.clone()
+				.sub(camera.position)
+				.normalize()
+				.multiplyScalar(distance);
+			camera.position.copy(center).sub(direction);
+			camera.lookAt(center);
+			*/
 			
 			const move = new THREE.Vector3(0,0,distance);
 			const pos = center.clone()
@@ -611,12 +631,14 @@ class View3D extends Component {
 		const sceneBG = this.scene.background;
 		this.scene.background = null;
 
+		// test render only selected tmb
+		const tmb_render = '';
 		//const tmb_render = 'opt_head_01';
 
 		// create thumbnails
 		elGroups.forEach((group) => {
 			group[1].items.forEach((el) => {
-				//if (!el.key.startsWith(tmb_render)) { return; }
+				if (tmb_render.length > 0 && !el.key.startsWith(tmb_render)) { return; }
 
 				// find object to render
 				let objRender = null;
@@ -625,14 +647,21 @@ class View3D extends Component {
 					if (o.name === el.key) { objRender = o; }
 				});
 
-				// calc bounding box, NOT WORKING
-				//bb.expandByObject(objRender);
-				// take copy of mesh bounding box
-				bb.copy(objRender.geometry.boundingBox);
+				// calc bounding box
+				if (this.isSkinnedMesh) {
+					// take copy of mesh bounding box
+					// NOTE: working with skinned model
+					bb.copy(objRender.geometry.boundingBox);
+				} else {
+					// NOTE: Working with non skinned model
+					bb.expandByObject(objRender);
+				}
 
-				//const box = new THREE.Box3Helper(bb, 0xff0000)
-				//box.name = "hlp_bb_" + el.key;
-				//this.scene.add( box );
+				/* test bounding box
+				const box = new THREE.Box3Helper(bb, 0xff0000)
+				box.name = "hlp_bb_" + el.key;
+				this.scene.add( box );
+				*/
 		
 				// position camera to thumbnail
 				this.cameraToBBox(bb, cam, null, 1.2);
@@ -642,7 +671,6 @@ class View3D extends Component {
 
 				// render
 				objRender.visible = true;		// make it visible
-				//this.rendererTmb.clear();
 				this.rendererTmb.render(this.scene, cam);
 				el.thumbnail = this.rendererTmb.domElement.toDataURL();
 				objRender.visible = false;		// hide it again
